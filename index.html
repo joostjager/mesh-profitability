@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#09090b">
+    <meta name="description" content="Estimate the electricity cost of running popular open models on a single GPU or Mac. Compare output speed, power, and cost per million tokens.">
+    <title>Mesh LLM · Inference electricity calculator</title>
+    <link rel="icon" href="./assets/mesh-logo.png" type="image/png">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="site-header wrap">
+      <a class="brand" href="./" aria-label="Mesh calculator home"><img class="brand-mark" src="./assets/mesh-logo.png" alt="" width="38" height="38"><span class="brand-name">mesh<span>llm</span></span><span class="brand-divider">/</span><span class="brand-section">inference economics</span></a>
+      <a class="header-link" href="https://meshllm.cloud/">MeshLLM <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main class="wrap">
+      <section class="intro">
+        <p class="eyebrow"><span class="status-dot"></span> INFERENCE ELECTRICITY CALCULATOR</p>
+        <h1>Local inference.<br><span>What does it cost?</span></h1>
+        <p class="intro-copy">What does it cost to generate a million tokens at home? Choose your hardware and electricity price to compare open models.</p>
+      </section>
+
+      <section class="configuration panel" aria-label="Calculator inputs">
+        <fieldset class="hardware-fieldset">
+          <legend><span class="step">01</span> Choose your hardware</legend>
+          <div class="hardware-options" id="hardware-options"></div>
+        </fieldset>
+        <div class="electricity-field">
+          <label for="electricity-price"><span class="step">02</span> Set your electricity price</label>
+          <div class="price-row">
+            <div class="number-field price-input"><span aria-hidden="true">$</span><input id="electricity-price" type="number" min="0" max="100" step="0.01" value="0.20" inputmode="decimal" aria-describedby="price-help validation"><span aria-hidden="true">/ kWh</span></div>
+            <span class="currency-label">USD</span>
+          </div>
+          <p class="field-help" id="price-help">Your variable rate, including taxes.</p>
+          <p class="validation" id="validation" role="alert" hidden>Enter an electricity price from $0 to $100/kWh.</p>
+        </div>
+      </section>
+
+      <section class="results" aria-labelledby="results-title">
+        <div class="table-heading">
+          <div><h2 id="results-title">Compare models</h2><p id="setup-description"></p></div>
+          <div class="price-controls"><span id="hosted-status" role="status"></span><button id="refresh-prices" type="button">Refresh prices ↻</button></div>
+        </div>
+        <div class="table-scroll panel" tabindex="0" role="region" aria-label="Model comparison table">
+          <table aria-describedby="table-notes profit-note">
+            <thead><tr>
+              <th scope="col" class="model-column">Model</th>
+              <th scope="col">Generation<span>tok/s</span></th>
+              <th scope="col">Inference power<span>W · estimated</span></th>
+              <th scope="col">Energy / 1M<span>kWh</span></th>
+              <th scope="col" class="cost-column">Electricity / 1M<span>USD · output tokens</span></th>
+              <th scope="col">Cheapest OpenRouter<span>USD / 1M output tokens</span></th>
+              <th scope="col" class="profit-column" aria-sort="descending">Max profit / month* ↓<span>USD · 30 days, 24/7</span></th>
+            </tr></thead>
+            <tbody id="model-rows"></tbody>
+          </table>
+        </div>
+        <p class="table-note" id="table-notes">Gray rows exceed the estimated memory budget for the selected variant. “No benchmark” means the model fits the budget, but speed is unknown. Fit uses weight size or reported peak memory plus 20% headroom and reserves 16 GB on each Mac.</p>
+        <p class="table-note" id="profit-note"><strong>*Maximum profit assumes 30 days (720 hours) of continuous generation at the listed speed and selling every output token at the cheapest OpenRouter rate, minus electricity only.</strong> Excludes prompt processing, idle time, hardware, fees, and other costs. Input revenue and charges are excluded; hosted quantization may differ.</p>
+      </section>
+
+    </main>
+    <footer class="wrap"><span class="footer-brand">meshllm <span>/</span> local inference economics</span><span>Small calculator. No account. Runs in your browser.</span></footer>
+    <noscript><p class="wrap">Enable JavaScript to use the calculator. All calculations run locally in your browser.</p></noscript>
+  </body>
+</html>
