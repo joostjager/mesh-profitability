@@ -69,7 +69,7 @@ test('512 GB Studio has measured profiles for the larger models while smaller ma
     const profile = profiles.find((item) => item.hardwareId === studio.id && item.modelId === id);
     assert.ok(profile);
     assert.equal(memoryFit(studio, model, profile).fits, true);
-    for (const machine of hardware.filter((item) => item.id !== studio.id)) {
+    for (const machine of hardware.filter((item) => item.id !== studio.id && !item.nodeCount)) {
       assert.equal(memoryFit(machine, model).fits, false);
     }
   }
@@ -86,11 +86,33 @@ test('every selectable pairing retains its exact source and a finite result', ()
     assert.ok(source);
     assert.equal(profile.tps, Number(source.tps));
     assert.equal(profile.sourceUrl, source.source_url);
-    assert.ok(Number.isFinite(calculate({ watts: machine.watts, tokensPerSecond: profile.tps, pricePerKwh: 0.2 }).cost));
+    assert.ok(Number.isFinite(calculate({ watts: profile.watts ?? machine.watts, tokensPerSecond: profile.tps, pricePerKwh: 0.2 }).cost));
     const pair = `${profile.hardwareId}/${profile.modelId}`;
     assert.ok(!pairs.has(pair));
     pairs.add(pair);
   }
   for (const machine of hardware) assert.ok(profiles.some((item) => item.hardwareId === machine.id));
   for (const model of models) assert.ok(profiles.some((item) => item.modelId === model.id));
+});
+
+test('eight-laptop estimate uses the slowest measured slice and counts GPU energy once', () => {
+  const report = JSON.parse(readFileSync(new URL('../data/glm53-m3max-slice-benchmark.json', import.meta.url)));
+  const machine = hardware.find((item) => item.id === 'm3max8');
+  const profile = profiles.find((item) => item.hardwareId === machine.id);
+  assert.equal(machine.nodeCount, report.stages.length);
+  assert.equal(machine.memoryGB / machine.nodeCount, 64);
+  const slowestMs = Math.max(...report.stages.map((stage) => stage.measurement.decode_ms_per_output_token));
+  const joules = report.stages.reduce((sum, stage) => sum + stage.measurement.energy.decode.estimated_total_sensor_joules_per_token, 0);
+  assert.ok(Math.abs(profile.tps - 1000 / slowestMs) < 1e-10);
+  assert.ok(Math.abs(profile.gpuJoulesPerToken - joules) < 1e-10);
+  const energy = calculate({ watts: profile.watts, tokensPerSecond: profile.tps, pricePerKwh: 0.20 });
+  assert.ok(Math.abs(energy.kwh - joules / 3.6) < 1e-12);
+  assert.ok(Math.abs(energy.cost - 0.056291660936850056) < 1e-12);
+  const fit = memoryFit(machine, models.find((model) => model.id === profile.modelId), profile);
+  const largestStageGB = Math.max(...report.stages.map((stage) => stage.resident_tensor_bytes)) / 1e9;
+  assert.equal(profile.stageTensorGB, largestStageGB);
+  assert.equal(fit.availableGB, 48);
+  assert.equal(fit.fits, true);
+  assert.equal(memoryFit({ ...machine, memoryGB: 8 * 32 }, models.find((model) => model.id === profile.modelId), profile).fits, false);
+  assert.equal(machine.watts, undefined, 'do not transfer GLM power to unbenchmarked models');
 });

@@ -1,7 +1,7 @@
 {
   "snapshot": "2026-11-12",
   "dataset_url": "https://tokatlas.github.io/data/",
-  "provenance": "Selected records from the dataset downloaded for the Research MeshLLM profitability chat. Original records retained; dates and claims are as supplied and were not independently reproduced.",
+  "provenance": "Selected records from the dataset downloaded for the Research MeshLLM profitability chat. Original records retained; dates and claims are as supplied and were not independently reproduced. The local Skippy slice record is a separate measured-source addition with derived pipeline capacity; its complete report is retained alongside this file.",
   "records": [
     {
       "backend": "llama.cpp",
@@ -68,7 +68,7 @@
       "pp_tps": 2095.0,
       "provenance": "community",
       "quant": "4bit",
-      "quote": "Qwen3.6-35B-A3B-4bit on M4 Max (40c); M4 Max (40c) \u00b7 64 GB \u00b7 4bit; 4k 2,095 128.5 21.4 GB view",
+      "quote": "Qwen3.6-35B-A3B-4bit on M4 Max (40c); M4 Max (40c) · 64 GB · 4bit; 4k 2,095 128.5 21.4 GB view",
       "ram_gb": 64,
       "retrieved": "2026-10-07",
       "source_name": "oMLX community benchmark trace: https://omlx.ai/benchmarks/performance/j3u2wxoh",
@@ -93,7 +93,7 @@
       "pp_tps": 204.4,
       "provenance": "community",
       "quant": "oQ4e",
-      "quote": "gemma-4-31B-it-oQ4e-mtp on M4 Max (40c); M4 Max (40c) \u00b7 64 GB \u00b7 4bit; 4k 204.4 46.7 21.3 GB view",
+      "quote": "gemma-4-31B-it-oQ4e-mtp on M4 Max (40c); M4 Max (40c) · 64 GB · 4bit; 4k 204.4 46.7 21.3 GB view",
       "ram_gb": 64,
       "retrieved": "2026-10-07",
       "source_name": "oMLX community benchmark trace: https://omlx.ai/benchmarks/performance/m6ek9coc",
@@ -118,7 +118,7 @@
       "pp_tps": 247.5,
       "provenance": "community",
       "quant": "4bit",
-      "quote": "Qwen3.8-27B-4bit on M4 Max (40c); M4 Max (40c) \u00b7 64 GB \u00b7 4bit; 4k 247.5 64.1 21.5 GB view",
+      "quote": "Qwen3.8-27B-4bit on M4 Max (40c); M4 Max (40c) · 64 GB · 4bit; 4k 247.5 64.1 21.5 GB view",
       "ram_gb": 64,
       "retrieved": "2026-10-07",
       "source_name": "oMLX community benchmark trace: https://omlx.ai/benchmarks/performance/yszhd8zc",
@@ -143,7 +143,7 @@
       "pp_tps": 346.3,
       "provenance": "community",
       "quant": "oQ8e",
-      "quote": "gemma-4-31b-it-oQ8e-mtp on M3 Ultra (80c); M3 Ultra (80c) \u00b7 512 GB \u00b7 8bit; 4k 346.3 34.1 35.0 GB current",
+      "quote": "gemma-4-31b-it-oQ8e-mtp on M3 Ultra (80c); M3 Ultra (80c) · 512 GB · 8bit; 4k 346.3 34.1 35.0 GB current",
       "ram_gb": 512,
       "retrieved": "2026-10-07",
       "source_name": "oMLX community benchmark trace: https://omlx.ai/benchmarks/performance/ei1g3dfm",
@@ -168,7 +168,7 @@
       "pp_tps": 544.3,
       "provenance": "community",
       "quant": "oQ4e",
-      "quote": "GLM-5.3-Flash-oQ4e on M3 Ultra (80c); M3 Ultra (80c) \u00b7 512 GB \u00b7 4bit; 4k 544.3 70.4 177.4 GB current",
+      "quote": "GLM-5.3-Flash-oQ4e on M3 Ultra (80c); M3 Ultra (80c) · 512 GB · 4bit; 4k 544.3 70.4 177.4 GB current",
       "ram_gb": 512,
       "retrieved": "2026-10-07",
       "source_name": "oMLX community benchmark trace: https://omlx.ai/benchmarks/performance/lyb5gcby",
@@ -193,7 +193,7 @@
       "pp_tps": 559.9,
       "provenance": "community",
       "quant": "oQ4e",
-      "quote": "Qwen3.8-27B-oQ4e-mtp on M3 Ultra (80c); M3 Ultra (80c) \u00b7 512 GB \u00b7 4bit; 4k 559.9 111.1 25.0 GB view",
+      "quote": "Qwen3.8-27B-oQ4e-mtp on M3 Ultra (80c); M3 Ultra (80c) · 512 GB · 4bit; 4k 559.9 111.1 25.0 GB view",
       "ram_gb": 512,
       "retrieved": "2026-10-07",
       "source_name": "oMLX community benchmark trace: https://omlx.ai/benchmarks/performance/cs39n1ht",
@@ -218,7 +218,7 @@
       "pp_tps": 3215.0,
       "provenance": "community",
       "quant": "oQ4e",
-      "quote": "Qwen3.6-35B-A3B-oQ4e-mtp on M3 Ultra (80c); M3 Ultra (80c) \u00b7 512 GB \u00b7 4bit; 4k 3,215 157.4 23.0 GB view",
+      "quote": "Qwen3.6-35B-A3B-oQ4e-mtp on M3 Ultra (80c); M3 Ultra (80c) · 512 GB · 4bit; 4k 3,215 157.4 23.0 GB view",
       "ram_gb": 512,
       "retrieved": "2026-10-07",
       "source_name": "oMLX community benchmark trace: https://omlx.ai/benchmarks/performance/k5q6libm",
@@ -243,7 +243,7 @@
       "pp_tps": 376.6,
       "provenance": "community",
       "quant": "4bit",
-      "quote": "MiniMax-M3-4bit on M3 Ultra (80c); M3 Ultra (80c) \u00b7 512 GB \u00b7 4bit; 4k tokens 376.6 PP tok/s 19.7 TG tok/s 10875 TTFT (ms) 227.5 Peak mem",
+      "quote": "MiniMax-M3-4bit on M3 Ultra (80c); M3 Ultra (80c) · 512 GB · 4bit; 4k tokens 376.6 PP tok/s 19.7 TG tok/s 10875 TTFT (ms) 227.5 Peak mem",
       "ram_gb": 512,
       "retrieved": "2026-10-07",
       "source_name": "oMLX community benchmark trace: https://omlx.ai/benchmarks/performance/b810iglf",
@@ -251,6 +251,23 @@
       "tg_tokens": null,
       "tps": 19.7,
       "ttft_s": null
+    },
+    {
+      "id": "mesh-glm53-m3max-eight-stage-metal",
+      "model": "GLM-5.3 Flash",
+      "hardware": "8 × MacBook Pro M3 Max, 64 GB, 16 CPU / 40 GPU cores each",
+      "backend": "Skippy Metal",
+      "quant": "UD-Q4_K_XL",
+      "tps": 67.64876075195366,
+      "power_w": null,
+      "gpu_joules_per_output_token": 1.013249896863301,
+      "provenance": "Isolated slices measured on one laptop; ideal eight-laptop pipeline throughput derived from the slowest stage. Not measured cluster throughput or wall power.",
+      "source_url": "./data/glm53-m3max-slice-benchmark.json",
+      "source_name": "Mesh LLM dedicated slice benchmark",
+      "source_thread": "codex://threads/01a1d4be-1923-72f3-bb66-8f4c94609dd9",
+      "model_revision": "621d456e93e926e4b52f85cff5f634358c1828f9",
+      "retrieved": "2026-11-16",
+      "notes": "391 prompt tokens, 511 teacher-forced decode steps, five repeats after warmup; speculation disabled. Network, scheduling and prefill excluded. GPU energy measured via macmon/IOReport. Full-model parity unavailable. Architecture metadata normalized; weights unchanged."
     }
   ],
   "verified_source_pages": {
@@ -263,5 +280,10 @@
       "omlx-b810iglf-ctx4096"
     ],
     "notes": "Verified the source pages for M3 Ultra 80-GPU-core, 512 GB, 4K context results and acceleration settings. Original imported records are retained unchanged."
+  },
+  "audit": {
+    "date": "2026-11-13",
+    "path": "benchmark-audit.json",
+    "note": "All ten selected rates match original reports. M4 Max Qwen3.8 DFlash metadata corrected; all wattages remain unverified wall-power assumptions. Original records remain unchanged."
   }
 }

@@ -27,17 +27,20 @@ function render() {
   const valid = input.value.trim() !== '' && input.validity.valid;
   input.setAttribute('aria-invalid', String(!valid));
   $('validation').hidden = valid;
-  $('setup-description').textContent = `${machine.name} · ${machine.detail} · single-machine inference`;
+  $('setup-description').textContent = `${machine.name} · ${machine.detail} · ${machine.setup ?? 'single-machine inference'}`;
+  $('configuration-note').hidden = !machine.note;
+  $('configuration-note').textContent = machine.note ?? '';
 
   const rows = models.map((model) => {
     const profile = profiles.find((item) => item.hardwareId === hardwareId && item.modelId === model.id);
     const fit = memoryFit(machine, model, profile);
     const quote = quotes.get(model.id);
     const measured = fit.fits && profile;
-    const energy = measured ? calculate({ watts: machine.watts, tokensPerSecond: profile.tps, pricePerKwh: 0 }) : null;
+    const watts = profile?.watts ?? machine.watts;
+    const energy = measured ? calculate({ watts, tokensPerSecond: profile.tps, pricePerKwh: 0 }) : null;
     const cost = energy && valid ? energy.kwh * input.valueAsNumber : null;
     const profit = cost !== null && quote.offer ? maximumProfitPerMonth({
-      watts: machine.watts, tokensPerSecond: profile.tps,
+      watts, tokensPerSecond: profile.tps,
       pricePerKwh: input.valueAsNumber, outputPricePerMillion: quote.offer.outputPerMillion,
     }).profitPerMonth : null;
     const row = document.createElement('tr');
@@ -48,13 +51,14 @@ function render() {
       : profile ? quant : `${quant} · no benchmark`;
     row.innerHTML = `
       <th scope="row"><span class="model-name">${model.name}</span><span class="model-status">${status}</span></th>
-      <td class="speed-cell"><span class="value">${measured ? format(profile.tps) : '—'}</span><span class="cell-note">${fit.fits && !profile ? 'No benchmark' : ''}</span></td>
-      <td><span class="value">${fit.fits ? format(machine.watts) : '—'}</span><span class="cell-note">${fit.fits ? 'Wall power estimate' : ''}</span></td>
-      <td><span class="value">${energy ? format(energy.kwh, 3) : '—'}</span></td>
-      <td class="cost-column"><span class="value cost-value">${cost !== null ? money(cost) : '—'}</span></td>
+      <td class="speed-cell"><span class="value">${measured ? format(profile.tps) : '—'}</span><span class="cell-note">${measured ? profile.speedLabel ?? '' : fit.fits ? 'No benchmark' : ''}</span></td>
+      <td class="power-cell"><span class="value">${fit.fits && watts !== undefined ? format(watts) : '—'}</span><span class="cell-note">${fit.fits && watts !== undefined ? profile?.powerLabel ?? 'Unverified wall estimate' : ''}</span></td>
+      <td><span class="value">${energy ? format(energy.kwh, 3) : '—'}</span><span class="cell-note">${energy ? profile.energyLabel ?? '' : ''}</span></td>
+      <td class="cost-column"><span class="value cost-value">${cost !== null ? money(cost) : '—'}</span><span class="cell-note">${cost !== null && profile.gpuJoulesPerToken ? 'GPU decode only' : ''}</span></td>
       <td class="hosted-cell"><span class="value hosted-value"></span><a class="cell-note provider-link" href="https://openrouter.ai/${model.openRouterId}"></a></td>
-      <td class="profit-column"><span class="value profit-value">${profit !== null ? money(profit, 2) : '—'}</span><span class="cell-note">${profit !== null ? '30 days · 24/7' : ''}</span></td>`;
+      <td class="profit-column"><span class="value profit-value">${profit !== null ? money(profit, 2) : '—'}</span><span class="cell-note">${profit !== null ? profile.profitLabel ?? '30 days · 24/7' : ''}</span></td>`;
     row.querySelector('th').title = `${format(fit.requiredGB, 1)} GB estimated from ${fit.basis} plus 20% headroom; ${fit.availableGB} GB memory budget. Other quantizations and context lengths may change fit.`;
+    row.querySelector('.power-cell').title = profile?.powerNote ?? machine.powerNote ?? 'No power benchmark for this pairing.';
     if (measured) {
       const link = document.createElement('a');
       link.className = 'cell-note benchmark-link';

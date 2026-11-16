@@ -1,0 +1,355 @@
+{
+  "checked_date": "2026-11-13",
+  "summary": {
+    "profiles_checked": 10,
+    "numeric_tps_changes": 0,
+    "metadata_corrections": [
+      "M4 Max Qwen3.8 27B at 64.1 tok/s uses DFlash; Qwen3.6 35B-A3B at 128.5 tok/s has DFlash and MTP disabled."
+    ],
+    "matched_average_wall_power_profiles": 0,
+    "independent_exact_profile_replications_found": 0,
+    "power_assumptions_changed": false
+  },
+  "profile_checks": [
+    {
+      "record_id": "lc-30087-rtx4090-qwen3827b-tg128-master",
+      "hardware_id": "rtx4090",
+      "model_id": "qwen38",
+      "source_url": "https://github.com/ggml-org/llama.cpp/issues/30087",
+      "calculator_tps": 47.62,
+      "source_tps": 47.62,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": null,
+      "generation_tokens": 128,
+      "quantization": "UD-Q4_K_XL",
+      "source_body_sha256": "3d91cbac1f7071ace88d296920f625f9e1e984b2644710a7aff35042c4c91e01"
+    },
+    {
+      "record_id": "lc-29769-rtx5090-tg128-before",
+      "hardware_id": "rtx5090",
+      "model_id": "qwen38",
+      "source_url": "https://github.com/ggml-org/llama.cpp/pull/29769",
+      "calculator_tps": 78.67,
+      "source_tps": 78.67,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": null,
+      "generation_tokens": 128,
+      "quantization": "Q4_K_M",
+      "source_body_sha256": "f0cbb7ae6bf72de7e5b840ebd19e490303a0e63901825fddaaaa07166f26991a"
+    },
+    {
+      "record_id": "omlx-yszhd8zc-ctx4096",
+      "hardware_id": "m4max",
+      "model_id": "qwen38",
+      "source_url": "https://omlx.ai/benchmarks/performance/yszhd8zc",
+      "calculator_tps": 64.1,
+      "source_tps": 64.1,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": 4096,
+      "quantization": "MLX 4-bit \u00b7 DFlash on",
+      "source_peak_model_memory_gb": 21.5,
+      "benchmark_context": "Code (Mixed)",
+      "acceleration": {
+        "moe_expert_offload_enabled": false,
+        "dflash_enabled": true,
+        "dflash_draft_model": "015e795645c74b1a0eeef3b570031fb62e769bc5",
+        "mtp_enabled": false,
+        "vlm_mtp_enabled": false
+      },
+      "source_sha256": "809888446ccced02500d09cc79fa255c2334388ab7e33dbd6fcf1233a097b80f"
+    },
+    {
+      "record_id": "omlx-j3u2wxoh-ctx4096",
+      "hardware_id": "m4max",
+      "model_id": "qwen36",
+      "source_url": "https://omlx.ai/benchmarks/performance/j3u2wxoh",
+      "calculator_tps": 128.5,
+      "source_tps": 128.5,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": 4096,
+      "quantization": "MLX 4-bit",
+      "source_peak_model_memory_gb": 21.4,
+      "benchmark_context": "Code (Python)",
+      "acceleration": {
+        "moe_expert_offload_enabled": false,
+        "dflash_enabled": false,
+        "mtp_enabled": false,
+        "vlm_mtp_enabled": false
+      },
+      "source_sha256": "98cd53813cb596fbe79cbbdea472aaf1d4d4654fb9c0b6e83a34169225b0679e"
+    },
+    {
+      "record_id": "omlx-m6ek9coc-ctx4096",
+      "hardware_id": "m4max",
+      "model_id": "gemma4",
+      "source_url": "https://omlx.ai/benchmarks/performance/m6ek9coc",
+      "calculator_tps": 46.7,
+      "source_tps": 46.7,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": 4096,
+      "quantization": "oQ4e \u00b7 MTP on",
+      "source_peak_model_memory_gb": 21.3,
+      "benchmark_context": "Code (Python)",
+      "acceleration": {
+        "moe_expert_offload_enabled": false,
+        "dflash_enabled": false,
+        "mtp_enabled": true,
+        "vlm_mtp_enabled": false
+      },
+      "source_sha256": "b492faabb654ee34c709dd45958b54f7b087874c9f37ba013ed2abbb29f3021a"
+    },
+    {
+      "record_id": "omlx-cs39n1ht-ctx4096",
+      "hardware_id": "m3ultra",
+      "model_id": "qwen38",
+      "source_url": "https://omlx.ai/benchmarks/performance/cs39n1ht",
+      "calculator_tps": 111.1,
+      "source_tps": 111.1,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": 4096,
+      "quantization": "oQ4e \u00b7 MTP on",
+      "source_peak_model_memory_gb": 25.0,
+      "benchmark_context": "Code (Mixed)",
+      "acceleration": {
+        "moe_expert_offload_enabled": false,
+        "dflash_enabled": false,
+        "dflash_draft_model": "Qwen3.8-27B-DFlash2",
+        "mtp_enabled": true,
+        "vlm_mtp_enabled": false
+      },
+      "source_sha256": "b5a15a71f62a5f00c112f7b4b08b7b50de28e8f1f2abef7101215ba2153c898f"
+    },
+    {
+      "record_id": "omlx-k5q6libm-ctx4096",
+      "hardware_id": "m3ultra",
+      "model_id": "qwen36",
+      "source_url": "https://omlx.ai/benchmarks/performance/k5q6libm",
+      "calculator_tps": 157.4,
+      "source_tps": 157.4,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": 4096,
+      "quantization": "oQ4e \u00b7 MTP on",
+      "source_peak_model_memory_gb": 23.0,
+      "benchmark_context": "Code (Python)",
+      "acceleration": {
+        "moe_expert_offload_enabled": false,
+        "dflash_enabled": false,
+        "mtp_enabled": true,
+        "vlm_mtp_enabled": false
+      },
+      "source_sha256": "8e98b8e93c756c54c7c16fd493b0050f4f4aca79b29395b337af6bf9663fbd46"
+    },
+    {
+      "record_id": "omlx-ei1g3dfm-ctx4096",
+      "hardware_id": "m3ultra",
+      "model_id": "gemma4",
+      "source_url": "https://omlx.ai/benchmarks/performance/ei1g3dfm",
+      "calculator_tps": 34.1,
+      "source_tps": 34.1,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": 4096,
+      "quantization": "oQ8e \u00b7 MTP on",
+      "source_peak_model_memory_gb": 35.0,
+      "benchmark_context": "Code (Python)",
+      "acceleration": {
+        "moe_expert_offload_enabled": false,
+        "dflash_enabled": false,
+        "mtp_enabled": false,
+        "vlm_mtp_enabled": true,
+        "vlm_mtp_draft_model": "gemma-4-31b-it-oQ8e-mtp-drafter"
+      },
+      "source_sha256": "77ac9304c48ab1e0f60f1972e09739d1d40c939fbad9da641fab8ae9cc650a9a"
+    },
+    {
+      "record_id": "omlx-lyb5gcby-ctx4096",
+      "hardware_id": "m3ultra",
+      "model_id": "glm53",
+      "source_url": "https://omlx.ai/benchmarks/performance/lyb5gcby",
+      "calculator_tps": 70.4,
+      "source_tps": 70.4,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": 4096,
+      "quantization": "oQ4e \u00b7 DFlash2",
+      "source_peak_model_memory_gb": 177.4,
+      "benchmark_context": "Code (Mixed)",
+      "acceleration": {
+        "moe_expert_offload_enabled": false,
+        "dflash_enabled": true,
+        "dflash_draft_model": "GLM-5.3-Flash-DFlash2",
+        "mtp_enabled": false,
+        "vlm_mtp_enabled": false
+      },
+      "source_sha256": "9025d2a06b5924755a1cdcaad55d2a8930d8e701e2593a08f7cab8b57b0bbb7b"
+    },
+    {
+      "record_id": "omlx-b810iglf-ctx4096",
+      "hardware_id": "m3ultra",
+      "model_id": "minimaxm3",
+      "source_url": "https://omlx.ai/benchmarks/performance/b810iglf",
+      "calculator_tps": 19.7,
+      "source_tps": 19.7,
+      "result": "matches_original_report",
+      "token_atlas_matches": true,
+      "average_wall_power_watts": null,
+      "power_result": "no_matched_average_wall_measurement_found",
+      "context_tokens": 4096,
+      "quantization": "MLX 4-bit",
+      "source_peak_model_memory_gb": 227.5,
+      "benchmark_context": "Code (Python)",
+      "acceleration": {
+        "moe_expert_offload_enabled": false,
+        "dflash_enabled": false,
+        "mtp_enabled": false,
+        "vlm_mtp_enabled": false
+      },
+      "source_sha256": "d816aa52e08b80fbfca348390be4c5485c24e422f2e6bc00e114b1d96c99ff87"
+    }
+  ],
+  "collection_checks": [
+    {
+      "name": "Token Atlas",
+      "url": "https://tokatlas.github.io/data/records.json",
+      "record_count": 41103,
+      "records_with_non_null_power": 13,
+      "matching_selected_records": 10,
+      "independent_replication": false,
+      "note": "Aggregator repeats the original reports; populated power fields may describe board ratings rather than measured averages.",
+      "download_sha256": "cbdd98e4e83b97b0e11d20ede12d639619bea2f6b4adc847d0b959c484d50cfb"
+    },
+    {
+      "name": "oMLX",
+      "url": "https://omlx.ai/benchmarks/performance",
+      "selected_reports_checked": 8,
+      "note": "All eight 4K rates, hardware configurations, and acceleration settings checked against original report pages. No power field located."
+    },
+    {
+      "name": "Jeff Geerling",
+      "url": "https://github.com/geerlingguy/ai-benchmarks",
+      "revision": "2f56f19fe9f90f999eb20944402895a653ebd7f2",
+      "note": "README has no exact current model matches. Findings labels power as peak. Same-hardware, different-model measurements are reference anchors only."
+    },
+    {
+      "name": "HWBench",
+      "url": "https://www.gethwbench.com/find.json?task=LLM+generation",
+      "platform_results_checked": 555,
+      "note": "No exact selected model/hardware pair in downloaded default edge-hardware results. Qwen3.6 and Gemma entries use Jetson hardware and module TDP; Qwen3.8 uses Strix Halo and chip TDP. Not matching wall-power evidence."
+    },
+    {
+      "name": "ML.ENERGY v3",
+      "url": "https://huggingface.co/datasets/ml-energy/benchmark-v3",
+      "note": "Public card and schema specify H100/B200 and average GPU power, not selected consumer GPUs/Macs or whole-machine power. Gated raw data not downloaded or used."
+    }
+  ],
+  "power_checks": [
+    {
+      "hardware_id": "rtx4090",
+      "assumed_wall_watts": 350,
+      "verified_average_wall_watts": null,
+      "status": "unverified_assumption",
+      "note": "350 W is an unverified whole-machine assumption. Geerling reports a 509.1 W system peak for gpt-oss 20B on a different 4090 PC; NVIDIA lists 450 W GPU TGP. Neither is an average wall measurement for this Qwen profile."
+    },
+    {
+      "hardware_id": "rtx5090",
+      "assumed_wall_watts": 450,
+      "verified_average_wall_watts": null,
+      "status": "unverified_assumption",
+      "note": "450 W is an unverified whole-machine assumption. Published Qwen3.8 vLLM measurements report roughly 380\u2013440 W for the GPU alone, with a different workload. NVIDIA lists 575 W GPU TGP; neither validates this profile at the wall."
+    },
+    {
+      "hardware_id": "m4max",
+      "assumed_wall_watts": 100,
+      "verified_average_wall_watts": null,
+      "status": "unverified_assumption",
+      "note": "100 W is an unverified whole-machine assumption. The oMLX reports do not publish watts. Apple\u2019s 145 W stress-test figure is for a 32-GPU-core, 36 GB Studio, not this 40-core, 64 GB configuration."
+    },
+    {
+      "hardware_id": "m3ultra",
+      "assumed_wall_watts": 200,
+      "verified_average_wall_watts": null,
+      "status": "unverified_assumption",
+      "note": "200 W is an unverified whole-machine assumption. Geerling reports a 227 W system peak for gpt-oss 20B on a 512 GB M3 Ultra; Apple reports 270 W at the wall under compute stress on the 80-core, 512 GB configuration. Neither measures average power for these oMLX profiles."
+    }
+  ],
+  "power_references": [
+    {
+      "hardware": "Mac Studio M3 Ultra 512 GB",
+      "model": "gpt-oss 20B Q4_K_M",
+      "generation_tps": 115.29,
+      "reported_peak_watts": 227,
+      "scope": "whole system according to HWBench; Geerling README labels peak",
+      "url": "https://github.com/geerlingguy/ai-benchmarks/issues/42#issuecomment-3624042296",
+      "applicability": "Different model and runtime; not an average for the selected profiles."
+    },
+    {
+      "hardware": "Intel Core Ultra 265K PC with RTX 4090",
+      "model": "gpt-oss 20B Q4_K_M",
+      "generation_tps": 279.65,
+      "reported_peak_watts": 509.1,
+      "scope": "whole system according to HWBench; Geerling README labels peak",
+      "url": "https://github.com/geerlingguy/ai-benchmarks/issues/43#issuecomment-3634421006",
+      "applicability": "Different model, runtime, and host; not a replacement for the Qwen profile."
+    },
+    {
+      "hardware": "RTX 5090",
+      "model": "Qwen3.8 27B 4-bit",
+      "reported_gpu_watts_range": [
+        380,
+        440
+      ],
+      "scope": "GPU telemetry sampled every 0.25 seconds; excludes host",
+      "url": "https://wesionary.team/en/posts/local-llm-power-cost",
+      "applicability": "vLLM, mixed prompt lengths, request plus tail energy; no exact matched llama.cpp decode or wall measurement."
+    },
+    {
+      "hardware": "Mac Studio M3 Ultra 80 GPU cores, 512 GB",
+      "reported_stress_test_wall_watts": 270,
+      "url": "https://support.apple.com/en-us/102027",
+      "applicability": "Same chip/core/memory configuration, compute stress rather than average LLM inference."
+    },
+    {
+      "hardware": "Mac Studio M4 Max 32 GPU cores, 36 GB",
+      "reported_stress_test_wall_watts": 145,
+      "url": "https://support.apple.com/en-us/102027",
+      "applicability": "Different core/memory configuration from selected M4 Max 40-core 64 GB; compute stress rather than inference."
+    },
+    {
+      "hardware": "RTX 4090",
+      "rated_gpu_tgp_watts": 450,
+      "url": "https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/",
+      "applicability": "GPU rating only, not a measured whole-machine inference average."
+    },
+    {
+      "hardware": "RTX 5090",
+      "rated_gpu_tgp_watts": 575,
+      "url": "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/",
+      "applicability": "GPU rating only, not a measured whole-machine inference average."
+    }
+  ]
+}

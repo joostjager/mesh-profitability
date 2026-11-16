@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#09090b">
-    <meta name="description" content="Estimate the electricity cost of running popular open models on a single GPU or Mac. Compare output speed, power, and cost per million tokens.">
+    <meta name="description" content="Estimate the electricity cost of running popular open models on a GPU, Mac, or laptop cluster. Compare output speed, power, and cost per million tokens.">
     <title>Mesh LLM · Inference electricity calculator</title>
     <link rel="icon" href="./assets/mesh-logo.png" type="image/png">
     <link rel="stylesheet" href="./styles.css">
@@ -44,12 +44,13 @@
           <div><h2 id="results-title">Compare models</h2><p id="setup-description"></p></div>
           <div class="price-controls"><span id="hosted-status" role="status"></span><button id="refresh-prices" type="button">Refresh prices ↻</button></div>
         </div>
+        <p class="table-note configuration-note" id="configuration-note" hidden></p>
         <div class="table-scroll panel" tabindex="0" role="region" aria-label="Model comparison table">
           <table aria-describedby="table-notes profit-note">
             <thead><tr>
               <th scope="col" class="model-column">Model</th>
               <th scope="col">Generation<span>tok/s</span></th>
-              <th scope="col">Inference power<span>W · estimated</span></th>
+              <th scope="col">Inference power<span>W · scope shown per row</span></th>
               <th scope="col">Energy / 1M<span>kWh</span></th>
               <th scope="col" class="cost-column">Electricity / 1M<span>USD · output tokens</span></th>
               <th scope="col">Cheapest OpenRouter<span>USD / 1M output tokens</span></th>
@@ -58,7 +59,7 @@
             <tbody id="model-rows"></tbody>
           </table>
         </div>
-        <p class="table-note" id="table-notes">Gray rows exceed the estimated memory budget for the selected variant. “No benchmark” means the model fits the budget, but speed is unknown. Fit uses weight size or reported peak memory plus 20% headroom and reserves 16 GB on each Mac.</p>
+        <p class="table-note" id="table-notes">Gray rows exceed the estimated memory budget for the selected variant. “No benchmark” means speed is unknown. Fit uses weight size, reported peak memory, or the largest stage tensor set plus 20% headroom and reserves 16 GB on each Mac. Unbenchmarked cluster rows use aggregate memory only; a valid partition is not established.</p>
         <p class="table-note" id="profit-note"><strong>*Maximum profit assumes 30 days (720 hours) of continuous generation at the listed speed and selling every output token at the cheapest OpenRouter rate, minus electricity only.</strong> Excludes prompt processing, idle time, hardware, fees, and other costs. Input revenue and charges are excluded; hosted quantization may differ.</p>
       </section>
 

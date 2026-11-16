@@ -1,8 +1,14 @@
 export const hardware = [
-  { id: 'rtx4090', name: 'RTX 4090', detail: '24 GB VRAM', kind: 'gpu', memoryGB: 24, reservedMemoryGB: 0, watts: 350, powerUrl: 'https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/' },
-  { id: 'rtx5090', name: 'RTX 5090', detail: '32 GB VRAM', kind: 'gpu', memoryGB: 32, reservedMemoryGB: 0, watts: 450, powerUrl: 'https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/' },
-  { id: 'm4max', name: 'Mac M4 Max', detail: '64 GB · 40 GPU cores', kind: 'mac', memoryGB: 64, reservedMemoryGB: 16, watts: 100, powerUrl: 'https://support.apple.com/en-us/102027' },
-  { id: 'm3ultra', name: 'Mac Studio M3 Ultra', detail: '512 GB · 80 GPU cores', kind: 'mac', memoryGB: 512, reservedMemoryGB: 16, watts: 200, powerUrl: 'https://support.apple.com/en-us/102027' },
+  { id: 'rtx4090', name: 'RTX 4090', detail: '24 GB VRAM', kind: 'gpu', memoryGB: 24, reservedMemoryGB: 0, watts: 350, powerUrl: 'https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/', powerNote: '350 W is an unverified whole-machine assumption. Geerling reports a 509.1 W system peak for gpt-oss 20B on a different 4090 PC; NVIDIA lists 450 W GPU TGP. Neither is an average wall measurement for this Qwen profile.' },
+  { id: 'rtx5090', name: 'RTX 5090', detail: '32 GB VRAM', kind: 'gpu', memoryGB: 32, reservedMemoryGB: 0, watts: 450, powerUrl: 'https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/', powerNote: '450 W is an unverified whole-machine assumption. Published Qwen3.8 vLLM measurements report roughly 380–440 W for the GPU alone, with a different workload. NVIDIA lists 575 W GPU TGP; neither validates this profile at the wall.' },
+  { id: 'm4max', name: 'Mac M4 Max', detail: '64 GB · 40 GPU cores', kind: 'mac', memoryGB: 64, reservedMemoryGB: 16, watts: 100, powerUrl: 'https://support.apple.com/en-us/102027', powerNote: '100 W is an unverified whole-machine assumption. The oMLX reports do not publish watts. Apple’s 145 W stress-test figure is for a 32-GPU-core, 36 GB Studio, not this 40-core, 64 GB configuration.' },
+  { id: 'm3ultra', name: 'Mac Studio M3 Ultra', detail: '512 GB · 80 GPU cores', kind: 'mac', memoryGB: 512, reservedMemoryGB: 16, watts: 200, powerUrl: 'https://support.apple.com/en-us/102027', powerNote: '200 W is an unverified whole-machine assumption. Geerling reports a 227 W system peak for gpt-oss 20B on a 512 GB M3 Ultra; Apple reports 270 W at the wall under compute stress on the 80-core, 512 GB configuration. Neither measures average power for these oMLX profiles.' },
+  {
+    id: 'm3max8', name: '8 × MacBook Pro M3 Max', detail: '64 GB each · 40 GPU cores each', kind: 'mac',
+    nodeCount: 8, memoryGB: 512, reservedMemoryGB: 128,
+    setup: '8 stages · ideal saturated pipeline',
+    note: 'Eight laptops, one resident stage each. Fixed-continuation slice benchmark: 67.65 tok/s is estimated aggregate capacity with enough independent requests; one request computes at 10.26 tok/s. Communication latency and scheduling overhead are ignored. GPU decode energy only; CPU, memory, waiting-machine power and prefill energy are excluded. Monthly profit is an upper bound before those costs.',
+  },
 ];
 
 export const models = [
@@ -14,13 +20,25 @@ export const models = [
 ];
 
 export function memoryFit(machine, model, profile) {
+  const stageTensorGB = profile?.stageTensorGB;
   const peakMemoryGB = profile?.peakMemoryGB ?? model.peakMemoryGB;
-  const requiredGB = (peakMemoryGB ?? model.weightsGB) * 1.2;
-  const availableGB = machine.memoryGB - machine.reservedMemoryGB;
-  return { fits: requiredGB <= availableGB, requiredGB, availableGB, basis: peakMemoryGB !== undefined ? 'reported peak memory' : 'weight size' };
+  const requiredGB = (stageTensorGB ?? peakMemoryGB ?? model.weightsGB) * 1.2;
+  const availableGB = (machine.memoryGB - machine.reservedMemoryGB) / (stageTensorGB !== undefined ? machine.nodeCount : 1);
+  return { fits: requiredGB <= availableGB, requiredGB, availableGB, basis: stageTensorGB !== undefined ? 'largest stage tensor set per laptop' : peakMemoryGB !== undefined ? 'reported peak memory' : 'weight size' };
 }
 
 export const profiles = [
+  {
+    hardwareId: 'm3max8', modelId: 'glm53', tps: 67.64876075195366,
+    quant: '4-bit UD-Q4_K_XL · 8 stages', stageTensorGB: 29.02374892,
+    gpuJoulesPerToken: 1.013249896863301,
+    watts: 67.64876075195366 * 1.013249896863301,
+    powerLabel: 'GPU only · derived total', speedLabel: 'Ideal pipeline estimate',
+    energyLabel: '1.013 GPU J/token', profitLabel: 'GPU costs only · upper bound',
+    powerNote: 'Equivalent aggregate GPU decode power: 1.013249896863301 J/output token × 67.64876075195366 output tok/s = 68.545 W. Derived from isolated slice measurements, not a measured eight-laptop wall-power reading. Excludes CPU, memory, waiting-machine power, prompt processing, communication and scheduling.',
+    recordId: 'mesh-glm53-m3max-eight-stage-metal', sourceUrl: './data/glm53-m3max-slice-benchmark.json',
+    note: 'Skippy Metal, M3 Max 16 CPU / 40 GPU cores, 64 GB. Eight slices measured sequentially on one laptop, 391 prompt tokens, 511 teacher-forced decode steps, five repeats after warmup, speculation off. 67.6488 tok/s = 1000 / slowest stage ms/token; 10.2598 tok/s for one request. Summed GPU decode energy: 1.01325 J/token. No measured cluster throughput or full-model parity. Tensor-free metadata shard normalized from glm5next to glm5-next; weights unchanged.',
+  },
   {
     hardwareId: 'rtx4090', modelId: 'qwen38', tps: 47.62, quant: 'UD-Q4_K_XL',
     memory: '≈17.7 GB weights', recordId: 'lc-30087-rtx4090-qwen3827b-tg128-master',
@@ -34,16 +52,16 @@ export const profiles = [
     note: 'Single RTX 5090, llama.cpp, Q4_K_M and F16 KV cache. Reported tg128 generation: 78.67 tok/s, two rounds of five repetitions. Short generation test; context capacity is not established by this rate. Desktop assumes 64 GB system RAM.',
   },
   {
-    hardwareId: 'm4max', modelId: 'qwen38', tps: 64.1, quant: 'MLX 4-bit',
+    hardwareId: 'm4max', modelId: 'qwen38', tps: 64.1, quant: 'MLX 4-bit · DFlash on',
     memory: '21.5 GB reported peak', recordId: 'omlx-yszhd8zc-ctx4096',
     sourceUrl: 'https://omlx.ai/benchmarks/performance/yszhd8zc',
-    note: 'M4 Max, 40 GPU cores, 64 GB unified memory, oMLX 4-bit, one request at 4K context. Reported generation: 64.1 tok/s; peak memory: 21.5 GB. The source record does not establish speculative-decoding settings.',
+    note: 'M4 Max, 40 GPU cores, 64 GB unified memory, oMLX 4-bit, one request at 4K context, Code (Mixed). Reported generation: 64.1 tok/s; peak memory: 21.5 GB. Source settings checked 2026-11-13: DFlash enabled, draft-model identifier 015e795645c74b1a0eeef3b570031fb62e769bc5; MTP and expert offload disabled. This is an accelerated rate, not a no-speculation baseline.',
   },
   {
     hardwareId: 'm4max', modelId: 'qwen36', tps: 128.5, quant: 'MLX 4-bit',
     memory: '21.4 GB reported peak', recordId: 'omlx-j3u2wxoh-ctx4096',
     sourceUrl: 'https://omlx.ai/benchmarks/performance/j3u2wxoh',
-    note: 'M4 Max, 40 GPU cores, 64 GB unified memory, oMLX 4-bit, one request at 4K context. Reported generation: 128.5 tok/s; peak memory: 21.4 GB. The source record does not establish speculative-decoding settings.',
+    note: 'M4 Max, 40 GPU cores, 64 GB unified memory, oMLX 4-bit, one request at 4K context, Code (Python). Reported generation: 128.5 tok/s; peak memory: 21.4 GB. Source settings checked 2026-11-13: DFlash, MTP, VLM MTP, and expert offload disabled.',
   },
   {
     hardwareId: 'm4max', modelId: 'gemma4', tps: 46.7, quant: 'oQ4e · MTP on',
