@@ -8,7 +8,7 @@
     <title>Mesh LLM · Inference electricity calculator</title>
     <link rel="icon" href="./assets/mesh-logo.png" type="image/png">
     <link rel="stylesheet" href="./styles.css?v=utilization">
-    <script type="module" src="./app.js?v=utilization"></script>
+    <script type="module" src="./app.js?v=system-power"></script>
   </head>
   <body>
     <header class="site-header wrap">
@@ -58,9 +58,10 @@
             <thead><tr>
               <th scope="col" class="model-column">Model</th>
               <th scope="col">Generation<span>tok/s</span></th>
-              <th scope="col">Inference power<span>W · scope shown per row</span></th>
+              <th scope="col">Active power<span>W · total system</span></th>
               <th scope="col">Active energy / 1M<span>kWh · excludes idle</span></th>
-              <th scope="col" class="cost-column">Active electricity / 1M<span>USD · excludes idle</span></th>
+              <th scope="col">Active electricity / 1M<span>USD · excludes idle</span></th>
+              <th scope="col" class="cost-column">Total electricity / 1M<span>USD · active + idle</span></th>
               <th scope="col">Cheapest OpenRouter<span>USD / 1M output tokens</span></th>
               <th scope="col" class="profit-column" aria-sort="descending">Profit / month* ↓<span id="profit-period">USD · 30 days · 100% utilized</span></th>
             </tr></thead>
@@ -68,7 +69,7 @@
           </table>
         </div>
         <p class="table-note" id="table-notes">Gray rows exceed the estimated memory budget for the selected variant. “No benchmark” means speed is unknown. Fit uses weight size, reported peak memory, or the largest stage tensor set plus 20% headroom and reserves 16 GB on each Mac. Unbenchmarked cluster rows use aggregate memory only; a valid partition is not established.</p>
-        <p class="table-note" id="profit-note"><strong>*Monthly profit assumes the selected utilization over 30 days (720 hours), selling every output token at the cheapest OpenRouter rate, minus active and idle electricity.</strong> Idle estimates assume awake hardware with the model loaded. H200 and laptop-cluster monthly costs add estimated host power to GPU measurements; active per-token columns retain their stated scope and exclude idle. Hover over monthly profit for the cost breakdown. Prompt processing, hardware/rental, cooling, fees and input revenue are excluded; hosted quantization may differ. <a href="./data/power-assumptions.json">Power assumptions ↗</a></p>
+        <p class="table-note" id="profit-note"><strong>*Monthly profit assumes the selected utilization over 30 days (720 hours), selling every output token at the cheapest OpenRouter rate, minus active and idle electricity.</strong> Total electricity / 1M divides that electricity bill by the output produced, using total-system active and idle power; at 0% utilization it is undefined. Idle estimates assume awake hardware with the model loaded. Active per-token columns use the same total-system active power and exclude idle. Power values are estimates, with source details available on hover. Hover over total electricity or monthly profit for the breakdown. Prompt processing, hardware/rental, cooling, fees and input revenue are excluded; hosted quantization may differ. <a href="./data/power-assumptions.json">Power assumptions ↗</a></p>
       </section>
 
     </main>

@@ -18,37 +18,41 @@ After committing and uploading the repository yourself, open **Settings → Page
 
 ```text
 hours per million output tokens = 1,000,000 / tokens per second / 3,600
-kWh per million output tokens   = watts / 1,000 × hours
+kWh per million output tokens   = total-system active watts / 1,000 × hours
 USD per million output tokens   = kWh × USD per kWh
 hours per month                = 30 × 24 = 720
 active hours                   = 720 × utilization percent / 100
 idle hours                     = 720 − active hours
 monthly output revenue         = tokens per second × 3,600 / 1,000,000 × hosted output USD per million × active hours
-monthly active electricity     = (benchmark watts + active host allowance) / 1,000 × USD per kWh × active hours
+monthly active electricity     = total-system active watts / 1,000 × USD per kWh × active hours
 monthly idle electricity       = whole-setup idle watts / 1,000 × USD per kWh × idle hours
 monthly profit                 = monthly output revenue − active electricity − idle electricity
+monthly output tokens          = tokens per second × 3,600 × active hours
+total electricity USD / 1M      = (monthly active electricity + monthly idle electricity) / (monthly output tokens / 1,000,000)
 ```
 
-Active per-million-token columns retain their benchmark power scope and exclude idle and separate monthly host allowances. Monthly profit uses the selected busy-time percentage, assumes all output sells at the cheapest listed OpenRouter rate, and pays for the hardware remaining awake during the rest of the month. It is an optimistic output-revenue scenario, not measured net profit. Prompt processing, input revenue/charges, hardware/rental, cooling, networking and fees are excluded. Utilization changes active hours, not busy-time tok/s or batch size; no batching efficiency gain is inferred. Unknown benchmarks remain unknown. The laptop-cluster profile retains its ideal aggregate pipeline capacity.
+Each hardware configuration has two power values, active and idle, both for the total system. Active per-million-token columns use active watts and exclude idle time. The same active watts and idle watts drive total electricity and monthly profit. Active power is a planning estimate shared across models, not a matched per-model measurement. Monthly profit uses the selected busy-time percentage, assumes all output sells at the cheapest listed OpenRouter rate, and pays for the hardware remaining awake during the rest of the month. It is an optimistic output-revenue scenario, not measured net profit. Prompt processing, input revenue/charges, hardware/rental, cooling, networking and fees are excluded. Utilization changes active hours, not busy-time tok/s or batch size; no batching efficiency gain is inferred. Unknown benchmarks remain unknown. The laptop-cluster profile retains its ideal aggregate pipeline capacity.
+
+The highlighted **Total electricity / 1M** column spreads idle electricity over the tokens actually produced at the selected utilization. It sits beside OpenRouter's output price for a direct per-million comparison, though local electricity excludes the other costs a provider's price must cover. It does not depend on OpenRouter pricing being available. At 0% utilization it shows “No output”, since the per-token cost is undefined even though idle electricity is charged. For H200 at $0.20/kWh, it is $0.308642/M at 100% and $0.481481/M at 50%; active electricity is $0.308642/M at either utilization.
 
 ## Utilization and idle power
 
-The slider spans 0–100% of a fixed 720-hour month. At 0%, output revenue and active electricity are zero, but the entire month incurs idle electricity. At 100%, idle electricity is zero. Between them, active and idle energy are weighted by their respective hours, so idle power is not added again during active hours. Hardware remains awake with the model loaded, displays off/dim and batteries charged; there is no automatic sleep or shutdown. Idle power is a fixed property of the selected hardware, displayed below the utilization slider.
+The slider spans 0–100% of a fixed 720-hour month. At 0%, output revenue and active electricity are zero, but the entire month incurs idle electricity. At 100%, idle electricity is zero. Between them, active and idle energy are weighted by their respective hours, so idle power is not added again during active hours. Hardware remains awake with the model loaded, displays off/dim and batteries charged; there is no automatic sleep or shutdown. Active and idle power are fixed properties of the selected hardware, displayed below the utilization slider.
 
-| Configuration | Default whole-setup idle | Separate active host allowance | Basis |
+| Configuration | Total-system active | Total-system idle | Basis |
 |---|---:|---:|---|
-| 2 × H200 NVL | **280 W** | **100 W** | User measured **180 W combined GPU idle** (2 × 90 W); add an unverified 100 W host budget |
-| RTX 4090 desktop | **60 W** | 0 W | Approximately 30 W GPU + 30 W desktop; active default already covers the whole machine |
-| RTX 5090 desktop | **75 W** | 0 W | Approximately 35 W GPU + 40 W desktop; active default already covers the whole machine |
-| M4 Max 64 GB | **10 W** | 0 W | Apple reports 6 W idle on a smaller Studio; allowance for larger configuration and serving/runtime activity |
-| M3 Ultra Studio 512 GB | **15 W** | 0 W | Apple reports 9 W idle on this configuration with Finder only; allowance for model/runtime residency |
-| 8 × M3 Max MacBook Pro | **80 W total** | **80 W total** | Eight times 10 W awake idle; separate active allowance for non-GPU components |
+| 2 × H200 NVL | **500 W** | **280 W** | Measured GPU draw plus an estimated host allowance |
+| RTX 4090 desktop | **350 W** | **60 W** | Whole-desktop planning estimates |
+| RTX 5090 desktop | **450 W** | **75 W** | Whole-desktop planning estimates |
+| M4 Max 64 GB | **100 W** | **10 W** | Whole-Mac planning estimates |
+| M3 Ultra Studio 512 GB | **200 W** | **15 W** | Whole-Studio planning estimates |
+| 8 × M3 Max MacBook Pro | **148.545 W total** | **80 W total** | Slice GPU compute estimate plus non-GPU allowance; eight awake laptops at idle |
 
 These defaults are planning estimates, not matched loaded-model wall-power measurements. The measured H200 GPU component is preserved separately. [Power assumptions and source anchors](./data/power-assumptions.json) document the reasoning and limits. Apple's [Mac Studio wall-power table](https://support.apple.com/en-us/102027), [ServeTheHome's 4090 GPU measurement](https://www.servethehome.com/nvidia-geforce-rtx-4090-founders-edition-review-the-gpu/7/), [GamersNexus's 5090 measurement](https://devtest.gamersnexus.net/gpus/nvidia-geforce-rtx-5090-founders-edition-review-benchmarks-gaming-thermals-power), and [Notebookcheck's M3 Max measurements](https://www.notebookcheck.net/Apple-MacBook-Pro-16-2023-M3-Max-Review-M3-Max-challenges-HX-CPUs-from-AMD-Intel.766414.0.html) are reference anchors, not validation of these exact serving setups.
 
-The H200 active measurement is GPU-only, so monthly calculations use **400 + 100 = 500 W active** and **180 + 100 = 280 W idle**. The laptop cluster uses **68.545 + 80 = 148.545 W active** and **80 W idle**. Active allowances and idle power are independent hardware properties. Actual CPU/DRAM and conversion losses can be higher. This avoids presenting GPU-only active draw and whole-machine idle draw as if they covered the same components, but it does not turn the result into a measured wall-power estimate. The per-token GPU measurements remain unchanged. Other hardware's active figures already represent whole-machine assumptions, so no additional host power is added.
+The H200 totals come from **400 + 100 = 500 W active** and **180 + 100 = 280 W idle**, with measured GPU draw and an estimated 100 W host allowance. The laptop cluster uses **68.545 + 80 = 148.545 W active** and **80 W idle**. These components explain the source of the two total-system estimates; the calculator does not add separate allowances at calculation time. Actual CPU/DRAM and conversion losses can be higher. Original GPU measurements remain in the source records, but all displayed energy and electricity costs now use total-system power.
 
-At $0.20/kWh, 0% utilization costs $40.32/month for the H200 setup and $11.52 for the eight laptops. At the recorded Relace output rate of $0.0784/M, the H200 scenario gives **−$53.71/month at 100%** or **−$47.02 at 50%**, including the new host allowance. More utilization need not improve profit when the active marginal cost exceeds revenue.
+At $0.20/kWh, 0% utilization costs $40.32/month for the H200 setup and $11.52 for the eight laptops. At the recorded Relace output rate of $0.0784/M, the H200 scenario gives **−$53.71/month at 100%** or **−$47.02 at 50%**, using total-system power. More utilization need not improve profit when the active marginal cost exceeds revenue.
 
 The initial shortlist is Qwen3.8 27B, Qwen3.6 35B-A3B, and Gemma 4 31B, based on the OpenRouter popularity research from November 12, 2026. GLM-5.3 Flash and MiniMax M3 extend it to larger models. Ten pairings have curated community speed benchmarks, and the eight-laptop GLM profile adds an estimate from locally measured slices. All models remain visible; compatibility is assessed separately from benchmark availability. A compatible model without a speed benchmark has unknown energy, electricity cost, and monthly profit. Quantizations and benchmark contexts differ across profiles. Gemma's Mac result includes MTP speculative decoding.
 
@@ -92,9 +96,9 @@ GLM's reported speed requires the GLM-5.3-Flash-DFlash2 draft model and the publ
 
 The user reported a rented **2 × H200 NVL** configuration with roughly **280 GB combined VRAM**, running **GLM-5.3 Flash UD-Q4_K_XL** through MeshLLM with **MTP speculative decoding enabled**. Repeated long requests ran one at a time, yielding approximately **90 output tok/s** at **400 W combined GPU power**. These are paired user-reported measurements, not an independently reproduced result. The exact model/runtime revisions, context/output lengths, repeat count, sensor methodology and raw traces were not supplied. The [source record](./data/glm53-h200nvl-benchmark.json) preserves those limits.
 
-The calculator uses the reported values without rounding intermediate calculations: `400 / 90 = 4.4444 GPU J/output token`, `1.234568 kWh/million output tokens`, and **$0.246914/million at $0.20/kWh**. The 400 W covers both GPUs together. It excludes CPU/RAM, power-supply losses, cooling, rental, hardware and operations. No batching gain is assumed, and this profile's power is not assigned to other models without measurements.
+The source measurement implies `400 / 90 = 4.4444 GPU J/output token`. The calculator uses the **500 W total-system active estimate**, yielding `1.543210 kWh/million output tokens` and **$0.308642/million at $0.20/kWh**. The 400 W covers both GPUs together. It excludes CPU/RAM, power-supply losses, cooling, rental, hardware and operations. No batching gain is assumed. The hardware's total-system active power is a fixed planning estimate across models.
 
-The user's accompanying OpenRouter snapshot lists Relace at **$0.0784/million output tokens** and **$0.0399/million input tokens**, using **FP4** rather than our GGUF variant. The calculator continues to fetch live output prices rather than freezing that quote. At that output rate and 100% utilization, the GPU-only calculation gives $18.29 output revenue minus $57.60 GPU electricity, or **−$39.31/month before host costs**. The current monthly column also includes the separate 100 W host allowance, producing **−$53.71/month**; lower utilization adds idle electricity as described above. Input revenue and prompt-processing costs remain outside the calculator's scope. Memory fit uses approximately 199.71 GB of weights plus 20% headroom against combined VRAM, not a measured peak allocation.
+The user's accompanying OpenRouter snapshot lists Relace at **$0.0784/million output tokens** and **$0.0399/million input tokens**, using **FP4** rather than our GGUF variant. The calculator continues to fetch live output prices rather than freezing that quote. At that output rate and 100% utilization, the GPU-only calculation gives $18.29 output revenue minus $57.60 GPU electricity, or **−$39.31/month before host costs**. The total-system calculator uses 500 W active and 280 W idle, producing **−$53.71/month**; lower utilization adds idle electricity as described above. Input revenue and prompt-processing costs remain outside the calculator's scope. Memory fit uses approximately 199.71 GB of weights plus 20% headroom against combined VRAM, not a measured peak allocation.
 
 ## Eight-laptop GLM slice benchmark
 
@@ -108,14 +112,14 @@ The model is Unsloth GLM-5.3 Flash **UD-Q4_K_XL**, revision `621d456e93e926e4b52
 | One request's compute rate | 10.2598 tok/s | 1,000 / summed 97.4680 ms/token |
 | GPU decode energy | 1.01325 J/output token | Sum of measured slice GPU watts × timed seconds/token |
 | Equivalent aggregate GPU compute power | 68.5451 W | Aggregate tok/s × GPU J/token |
-| Energy per million output tokens | 0.281458 kWh | GPU J/token / 3.6 |
-| Cost at $0.20/kWh | $0.056292 / million | GPU energy × electricity price |
+| Active system energy per million output tokens | 0.609952 kWh | 148.5451 W / aggregate tok/s / 3.6 |
+| Active system cost at $0.20/kWh | $0.121990 / million | System energy × electricity price |
 
 The displayed capacity assumes enough independent requests to saturate an eight-stage pipeline. Communication latency, scheduling overhead and prompt processing are ignored. The report's workload-inclusive pipeline estimate is 64.8381 output tok/s, but this calculator consistently uses decode-only rates. Neither rate is measured cluster throughput.
 
-Energy comes from macmon/IOReport and covers only the GPU share of SoC power. The derived 68.55 W is aggregate GPU compute power at the ideal rate, not the sum of the eight active-stage wattages and not wall power. CPU, memory, waiting-machine power and prefill energy are absent from this measurement. The monthly column now adds an estimated 80 W non-GPU active allowance and the hardware's estimated idle power during non-serving hours; the per-token columns retain GPU-only energy. These allowances do not establish measured cluster power. Live OpenRouter quotes are used as for other profiles; hosted quantization can differ.
+Energy comes from macmon/IOReport and covers only the GPU share of SoC power. The derived 68.55 W is aggregate GPU compute power at the ideal rate, not the sum of the eight active-stage wattages and not wall power. CPU, memory, waiting-machine power and prefill energy are absent from this measurement. The calculator uses a total-system estimate of 148.545 W active, including an 80 W non-GPU allowance, and 80 W idle. All per-token energy and electricity columns use these system values. They do not establish measured cluster power. Live OpenRouter quotes are used as for other profiles; hosted quantization can differ.
 
-Memory fit checks the largest stage tensor set, 29.02375 GB, plus 20% headroom against 48 GB per laptop after the 16 GB reserve. Tensor bytes exclude KV/cache and scratch allocations, so this remains a planning check rather than a measured memory peak. Other cluster rows have no speed or power profile; their fit uses aggregate memory and does not prove a valid partition.
+Memory fit checks the largest stage tensor set, 29.02375 GB, plus 20% headroom against 48 GB per laptop after the 16 GB reserve. Tensor bytes exclude KV/cache and scratch allocations, so this remains a planning check rather than a measured memory peak. Other cluster rows have no speed benchmark; their fit uses aggregate memory and does not prove a valid partition.
 
 ## Benchmark and power audit, November 13, 2026
 

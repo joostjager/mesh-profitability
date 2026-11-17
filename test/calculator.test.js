@@ -48,7 +48,7 @@ test('maximum 30-day profit subtracts electricity from continuous output revenue
 });
 
 test('utilization splits a powered-on month into active and idle electricity', () => {
-  const inputs = { watts: 400, activeOverheadWatts: 100, idleWatts: 280, tokensPerSecond: 90, pricePerKwh: 0.20, outputPricePerMillion: 0.0784 };
+  const inputs = { watts: 500, idleWatts: 280, tokensPerSecond: 90, pricePerKwh: 0.20, outputPricePerMillion: 0.0784 };
   const full = maximumProfitPerMonth({ ...inputs, utilizationPercent: 100 });
   assert.equal(full.activeHours, 720);
   assert.equal(full.idleElectricityPerMonth, 0);
@@ -70,27 +70,44 @@ test('utilization splits a powered-on month into active and idle electricity', (
   for (const [field, values] of Object.entries({
     utilizationPercent: [-1, 101, NaN, Infinity, '50', null],
     idleWatts: [-1, NaN, Infinity, '280', null],
-    activeOverheadWatts: [-1, NaN, Infinity, '100', null],
   })) {
     for (const value of values) assert.throws(() => maximumProfitPerMonth({ ...inputs, [field]: value }), RangeError);
   }
 });
 
-test('all six setups retain documented idle assumptions and the H200 measured GPU idle draw', () => {
+test('all six setups use documented total-system active and idle power', () => {
   const assumptions = JSON.parse(readFileSync(new URL('../data/power-assumptions.json', import.meta.url)));
   assert.equal(assumptions.records.length, hardware.length);
   for (const machine of hardware) {
     const record = assumptions.records.find((item) => item.hardware_id === machine.id);
     assert.equal(machine.idleWatts, record.idle_watts);
-    assert.equal(machine.activeOverheadWatts, record.active_overhead_watts);
+    assert.equal(machine.activeWatts, record.active_watts);
+    assert.ok(machine.activeWatts > machine.idleWatts);
     const idle = maximumProfitPerMonth({ watts: 1, tokensPerSecond: 1, pricePerKwh: 0.20, outputPricePerMillion: 0, utilizationPercent: 0, idleWatts: machine.idleWatts });
     assert.ok(Math.abs(idle.profitPerMonth + machine.idleWatts * 0.144) < 1e-10);
   }
   const h200 = hardware.find((item) => item.id === 'h200nvl2');
   const source = JSON.parse(readFileSync(new URL('../data/glm53-h200nvl-benchmark.json', import.meta.url)));
-  assert.equal(h200.idleGpuWatts, 180);
-  assert.equal(h200.idleGpuWatts, source.idle_gpu_watts);
-  assert.equal(h200.idleWatts, h200.idleGpuWatts + h200.activeOverheadWatts);
+  assert.equal(source.idle_gpu_watts, 180);
+  assert.equal(h200.idleWatts, source.idle_gpu_watts + 100);
+  assert.equal(h200.activeWatts, source.power_w + 100);
+});
+
+test('total electricity per million amortizes system active and idle costs over actual output', () => {
+  const inputs = { watts: 500, idleWatts: 280, tokensPerSecond: 90, pricePerKwh: 0.20, outputPricePerMillion: 0.0784 };
+  const full = maximumProfitPerMonth({ ...inputs, utilizationPercent: 100 });
+  assert.equal(full.outputTokensPerMonth, 233_280_000);
+  assert.ok(Math.abs(full.totalElectricityPerMillion - 0.30864197530864196) < 1e-12);
+  const half = maximumProfitPerMonth({ ...inputs, utilizationPercent: 50 });
+  assert.equal(half.outputTokensPerMonth, full.outputTokensPerMonth / 2);
+  assert.ok(Math.abs(half.totalElectricityPerMillion - 0.48148148148148145) < 1e-12);
+  assert.ok(Math.abs(half.totalElectricityPerMillion * half.outputTokensPerMonth / 1_000_000 - half.electricityPerMonth) < 1e-12);
+  assert.equal(maximumProfitPerMonth({ ...inputs, utilizationPercent: 50, outputPricePerMillion: 0 }).totalElectricityPerMillion, half.totalElectricityPerMillion);
+  assert.equal(maximumProfitPerMonth({ ...inputs, utilizationPercent: 0 }).totalElectricityPerMillion, null);
+  assert.equal(maximumProfitPerMonth({ ...inputs, utilizationPercent: 50, pricePerKwh: 0 }).totalElectricityPerMillion, 0);
+  assert.equal(maximumProfitPerMonth({ ...inputs, utilizationPercent: 0, pricePerKwh: 0 }).totalElectricityPerMillion, null);
+  const noIdle = maximumProfitPerMonth({ ...inputs, utilizationPercent: 1, idleWatts: 0 });
+  assert.ok(Math.abs(noIdle.totalElectricityPerMillion - full.totalElectricityPerMillion) < 1e-12);
 });
 
 test('memory budget and benchmark availability remain separate', () => {
@@ -132,7 +149,7 @@ test('every selectable pairing retains its exact source and a finite result', ()
     assert.ok(source);
     assert.equal(profile.tps, Number(source.tps));
     assert.equal(profile.sourceUrl, source.source_url);
-    assert.ok(Number.isFinite(calculate({ watts: profile.watts ?? machine.watts, tokensPerSecond: profile.tps, pricePerKwh: 0.2 }).cost));
+    assert.ok(Number.isFinite(calculate({ watts: machine.activeWatts, tokensPerSecond: profile.tps, pricePerKwh: 0.2 }).cost));
     const pair = `${profile.hardwareId}/${profile.modelId}`;
     assert.ok(!pairs.has(pair));
     pairs.add(pair);
@@ -141,7 +158,7 @@ test('every selectable pairing retains its exact source and a finite result', ()
   for (const model of models) assert.ok(profiles.some((item) => item.modelId === model.id));
 });
 
-test('eight-laptop estimate uses the slowest measured slice and counts GPU energy once', () => {
+test('eight-laptop system estimate uses measured slice compute plus a host allowance', () => {
   const report = JSON.parse(readFileSync(new URL('../data/glm53-m3max-slice-benchmark.json', import.meta.url)));
   const machine = hardware.find((item) => item.id === 'm3max8');
   const profile = profiles.find((item) => item.hardwareId === machine.id);
@@ -150,37 +167,34 @@ test('eight-laptop estimate uses the slowest measured slice and counts GPU energ
   const slowestMs = Math.max(...report.stages.map((stage) => stage.measurement.decode_ms_per_output_token));
   const joules = report.stages.reduce((sum, stage) => sum + stage.measurement.energy.decode.estimated_total_sensor_joules_per_token, 0);
   assert.ok(Math.abs(profile.tps - 1000 / slowestMs) < 1e-10);
-  assert.ok(Math.abs(profile.gpuJoulesPerToken - joules) < 1e-10);
-  const energy = calculate({ watts: profile.watts, tokensPerSecond: profile.tps, pricePerKwh: 0.20 });
-  assert.ok(Math.abs(energy.kwh - joules / 3.6) < 1e-12);
-  assert.ok(Math.abs(energy.cost - 0.056291660936850056) < 1e-12);
+  assert.ok(Math.abs(machine.activeWatts - (profile.tps * joules + 80)) < 1e-10);
+  const energy = calculate({ watts: machine.activeWatts, tokensPerSecond: profile.tps, pricePerKwh: 0.20 });
+  assert.ok(Math.abs(energy.kwh - (joules + 80 / profile.tps) / 3.6) < 1e-12);
+  assert.ok(energy.cost > 0.056291660936850056);
   const fit = memoryFit(machine, models.find((model) => model.id === profile.modelId), profile);
   const largestStageGB = Math.max(...report.stages.map((stage) => stage.resident_tensor_bytes)) / 1e9;
   assert.equal(profile.stageTensorGB, largestStageGB);
   assert.equal(fit.availableGB, 48);
   assert.equal(fit.fits, true);
   assert.equal(memoryFit({ ...machine, memoryGB: 8 * 32 }, models.find((model) => model.id === profile.modelId), profile).fits, false);
-  assert.equal(machine.watts, undefined, 'do not transfer GLM power to unbenchmarked models');
 });
 
-test('dual H200 benchmark uses combined GPU power and the reported single-request speed', () => {
+test('dual H200 uses estimated total-system power and the reported single-request speed', () => {
   const source = JSON.parse(readFileSync(new URL('../data/glm53-h200nvl-benchmark.json', import.meta.url)));
   const machine = hardware.find((item) => item.id === 'h200nvl2');
   const profile = profiles.find((item) => item.hardwareId === machine.id);
   assert.equal(machine.gpuCount, 2);
   assert.equal(profile.tps, source.tps);
-  assert.equal(profile.watts, source.power_w);
-  assert.equal(profile.gpuJoulesPerToken, 400 / 90);
-  const inputs = { watts: profile.watts, tokensPerSecond: profile.tps, pricePerKwh: 0.20 };
+  assert.equal(machine.activeWatts, source.power_w + 100);
+  const inputs = { watts: machine.activeWatts, tokensPerSecond: profile.tps, pricePerKwh: 0.20 };
   const energy = calculate(inputs);
-  assert.ok(Math.abs(energy.kwh - 1.2345679012345678) < 1e-12);
-  assert.ok(Math.abs(energy.cost - 0.24691358024691357) < 1e-12);
+  assert.ok(Math.abs(energy.kwh - 1.5432098765432098) < 1e-12);
+  assert.ok(Math.abs(energy.cost - 0.30864197530864196) < 1e-12);
   const monthly = maximumProfitPerMonth({ ...inputs, outputPricePerMillion: 0.0784 });
-  assert.ok(Math.abs(monthly.electricityPerMonth - 57.60) < 1e-12);
-  assert.ok(Math.abs(monthly.profitPerMonth - (-39.310848)) < 1e-10);
+  assert.ok(Math.abs(monthly.electricityPerMonth - 72) < 1e-12);
+  assert.ok(Math.abs(monthly.profitPerMonth - (-53.710848)) < 1e-10);
   const fit = memoryFit(machine, models.find((item) => item.id === profile.modelId), profile);
   assert.equal(fit.basis, 'weight size');
   assert.equal(fit.requiredGB, 199.71 * 1.2);
   assert.equal(fit.fits, true);
-  assert.equal(machine.watts, undefined, 'do not transfer GLM power to unbenchmarked models');
 });
