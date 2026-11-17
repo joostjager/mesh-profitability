@@ -310,7 +310,9 @@
         "Electricity cost excludes CPU/RAM, power-supply losses, cooling, rental, hardware and operations",
         "The calculator counts output revenue only; input revenue and charges remain excluded",
         "199.71 GB of weights plus planning headroom is used for fit, not a measured peak VRAM value"
-      ]
+      ],
+      "idle_gpu_watts": 180,
+      "idle_measurement_note": "Follow-up from the user, November 17, 2026: 2 × 90 W = 180 W combined GPU idle power. Host draw was not measured."
     }
   ],
   "verified_source_pages": {

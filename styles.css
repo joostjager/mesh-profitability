@@ -30,7 +30,7 @@ h1 span::before { content: ' '; }
 .panel { background: #0c0c0f; border: 1px solid var(--line); border-radius: 8px; }
 .configuration { display: grid; grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr); gap: 28px; padding: 24px 28px; align-items: center; }
 fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
-legend, .electricity-field > label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 14px; padding: 0; }
+legend, .operating-field > label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 10px; padding: 0; }
 .step { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10px; color: #71717a; margin-right: 9px; }
 .hardware-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .hardware-option { position: relative; cursor: pointer; }
@@ -46,7 +46,9 @@ legend, .electricity-field > label { display: block; font-size: 13px; font-weigh
 .hardware-option input:checked + .hardware-card .radio-dot { background: #3b82f6; border-color: #3b82f6; box-shadow: inset 0 0 0 3px #101c30; }
 .hardware-option input:focus-visible + .hardware-card { outline: 2px solid #60a5fa; outline-offset: 4px; }
 .hardware-card:hover { border-color: #52525b; }
-.electricity-field { padding-left: 32px; border-left: 1px solid var(--line); align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+.operating-fields { padding-left: 28px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 22px; }
+#utilization { width: 100%; accent-color: #3b82f6; cursor: pointer; }
+#utilization-value { float: right; color: #93c5fd; font-family: 'Geist Mono', ui-monospace, monospace; }
 .price-row { display: flex; align-items: center; gap: 12px; }
 .number-field { display: flex; align-items: center; border: 1px solid #3f3f46; border-radius: 7px; gap: 8px; padding: 0 12px; height: 45px; width: 210px; }
 .number-field:focus-within { outline: 2px solid #60a5fa; outline-offset: 2px; }

@@ -47,6 +47,52 @@ test('maximum 30-day profit subtracts electricity from continuous output revenue
   }
 });
 
+test('utilization splits a powered-on month into active and idle electricity', () => {
+  const inputs = { watts: 400, activeOverheadWatts: 100, idleWatts: 280, tokensPerSecond: 90, pricePerKwh: 0.20, outputPricePerMillion: 0.0784 };
+  const full = maximumProfitPerMonth({ ...inputs, utilizationPercent: 100 });
+  assert.equal(full.activeHours, 720);
+  assert.equal(full.idleElectricityPerMonth, 0);
+  assert.ok(Math.abs(full.activeElectricityPerMonth - 72) < 1e-12);
+  const idle = maximumProfitPerMonth({ ...inputs, utilizationPercent: 0 });
+  assert.equal(idle.revenuePerMonth, 0);
+  assert.equal(idle.activeElectricityPerMonth, 0);
+  assert.equal(idle.idleHours, 720);
+  assert.ok(Math.abs(idle.profitPerMonth + 40.32) < 1e-12);
+  const half = maximumProfitPerMonth({ ...inputs, utilizationPercent: 50 });
+  assert.equal(half.revenuePerMonth, full.revenuePerMonth / 2);
+  assert.ok(Math.abs(half.activeElectricityPerMonth - 36) < 1e-12);
+  assert.ok(Math.abs(half.idleElectricityPerMonth - 20.16) < 1e-12);
+  assert.ok(Math.abs(half.profitPerMonth + 47.015424) < 1e-10);
+  const free = maximumProfitPerMonth({ ...inputs, utilizationPercent: 50, pricePerKwh: 0 });
+  assert.equal(free.profitPerMonth, half.revenuePerMonth);
+  const noIdle = maximumProfitPerMonth({ ...inputs, utilizationPercent: 50, idleWatts: 0 });
+  assert.equal(noIdle.electricityPerMonth, half.activeElectricityPerMonth);
+  for (const [field, values] of Object.entries({
+    utilizationPercent: [-1, 101, NaN, Infinity, '50', null],
+    idleWatts: [-1, NaN, Infinity, '280', null],
+    activeOverheadWatts: [-1, NaN, Infinity, '100', null],
+  })) {
+    for (const value of values) assert.throws(() => maximumProfitPerMonth({ ...inputs, [field]: value }), RangeError);
+  }
+});
+
+test('all six setups retain documented idle assumptions and the H200 measured GPU idle draw', () => {
+  const assumptions = JSON.parse(readFileSync(new URL('../data/power-assumptions.json', import.meta.url)));
+  assert.equal(assumptions.records.length, hardware.length);
+  for (const machine of hardware) {
+    const record = assumptions.records.find((item) => item.hardware_id === machine.id);
+    assert.equal(machine.idleWatts, record.idle_watts);
+    assert.equal(machine.activeOverheadWatts, record.active_overhead_watts);
+    const idle = maximumProfitPerMonth({ watts: 1, tokensPerSecond: 1, pricePerKwh: 0.20, outputPricePerMillion: 0, utilizationPercent: 0, idleWatts: machine.idleWatts });
+    assert.ok(Math.abs(idle.profitPerMonth + machine.idleWatts * 0.144) < 1e-10);
+  }
+  const h200 = hardware.find((item) => item.id === 'h200nvl2');
+  const source = JSON.parse(readFileSync(new URL('../data/glm53-h200nvl-benchmark.json', import.meta.url)));
+  assert.equal(h200.idleGpuWatts, 180);
+  assert.equal(h200.idleGpuWatts, source.idle_gpu_watts);
+  assert.equal(h200.idleWatts, h200.idleGpuWatts + h200.activeOverheadWatts);
+});
+
 test('memory budget and benchmark availability remain separate', () => {
   const gpu24 = hardware.find((item) => item.id === 'rtx4090');
   const gpu32 = hardware.find((item) => item.id === 'rtx5090');

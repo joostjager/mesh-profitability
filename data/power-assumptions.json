@@ -1,0 +1,87 @@
+{
+  "checked_date": "2026-11-17",
+  "scope": "Whole-setup monthly power planning, not independently measured wall-power results. Hardware stays awake with models loaded; displays off/dim, batteries charged, and no external peripherals or other workloads.",
+  "monthly_method": "Active benchmark watts plus active_overhead_watts apply only to utilized hours. idle_watts is the entire idle setup and applies only to remaining hours. Do not add idle watts again to the active total.",
+  "active_energy_columns": "Retain original benchmark scope and exclude idle and the separate monthly host allowance.",
+  "limits": [
+    "H200 idle GPU draw of 180 W is measured by the user; its 100 W host allowance is an estimate.",
+    "GPU-only active figures omit components that can change under load; the added host allowances are approximate, not calibrated whole-machine measurements.",
+    "Idle power and active host allowances are fixed properties of the selected hardware and are labeled as estimates.",
+    "Utilization is a time fraction, not GPU utilization percentage, batch size, or a throughput multiplier from concurrency."
+  ],
+  "records": [
+    {
+      "hardware_id": "h200nvl2",
+      "idle_watts": 280,
+      "active_overhead_watts": 100,
+      "basis": "180 W combined GPU idle draw measured by the user, plus an estimated 100 W host allowance. Monthly active power adds the same 100 W host allowance to the measured 400 W GPU total. Host power is unverified.",
+      "source_anchors": [
+        {
+          "source": "User measurement supplied November 17, 2026",
+          "gpu_idle_watts": 180,
+          "note": "Two GPUs at 90 W each. Host power is not measured; 100 W is an independent planning allowance."
+        }
+      ]
+    },
+    {
+      "hardware_id": "rtx4090",
+      "idle_watts": 60,
+      "active_overhead_watts": 0,
+      "basis": "Estimated whole desktop idle draw: approximately 30 W GPU plus 30 W for CPU, RAM, storage, fans and power losses. Loaded-model idle was not measured on this desktop.",
+      "source_anchors": [
+        {
+          "url": "https://www.servethehome.com/nvidia-geforce-rtx-4090-founders-edition-review-the-gpu/7/",
+          "note": "Review reports about 33 W GPU-only idle. A 30 W GPU plus 30 W host budget gives the 60 W whole-desktop assumption; exact loaded-model idle is not measured."
+        }
+      ]
+    },
+    {
+      "hardware_id": "rtx5090",
+      "idle_watts": 75,
+      "active_overhead_watts": 0,
+      "basis": "Estimated whole desktop idle draw: approximately 35 W GPU plus 40 W for the rest of the desktop. Published GPU-only desktop-idle tests vary roughly 25–46 W; loaded-model idle was not measured here.",
+      "source_anchors": [
+        {
+          "url": "https://devtest.gamersnexus.net/gpus/nvidia-geforce-rtx-5090-founders-edition-review-benchmarks-gaming-thermals-power",
+          "note": "Review reports 46 W GPU-only idle with its setup; other reviewed display configurations report around 25–31 W. The 75 W desktop default budgets about 35 W GPU plus 40 W host; it is not a matched measurement."
+        }
+      ]
+    },
+    {
+      "hardware_id": "m4max",
+      "idle_watts": 10,
+      "active_overhead_watts": 0,
+      "basis": "Estimated whole-Mac idle draw, awake with the model loaded. Apple reports 6 W for a smaller 32-GPU-core, 36 GB M4 Max Studio with Finder only; 10 W is a planning allowance for this 40-core, 64 GB configuration.",
+      "source_anchors": [
+        {
+          "url": "https://support.apple.com/en-us/102027",
+          "note": "Apple reports 6 W wall idle for a smaller 32-GPU-core, 36 GB M4 Max Studio, Finder only. 10 W allows for the selected larger configuration and loaded runtime; not a measured result."
+        }
+      ]
+    },
+    {
+      "hardware_id": "m3ultra",
+      "idle_watts": 15,
+      "active_overhead_watts": 0,
+      "basis": "Estimated whole Studio idle draw with model residency. Apple reports 9 W at the wall for the 80-GPU-core, 512 GB configuration with Finder only; 15 W allows for the serving runtime and residency, not measured here.",
+      "source_anchors": [
+        {
+          "url": "https://support.apple.com/en-us/102027",
+          "note": "Apple reports 9 W wall idle for 80 GPU cores and 512 GB, Finder only. 15 W is a planning allowance for serving/runtime activity and memory residency."
+        }
+      ]
+    },
+    {
+      "hardware_id": "m3max8",
+      "idle_watts": 80,
+      "active_overhead_watts": 80,
+      "basis": "Estimated total for eight awake laptops at 10 W each, with displays off or dim and batteries charged. M3 Max review idle measurements are roughly 5–8 W under light display settings. Monthly active power adds a separate 80 W non-GPU allowance to the GPU compute estimate; neither allowance is measured on this cluster.",
+      "source_anchors": [
+        {
+          "url": "https://www.notebookcheck.net/Apple-MacBook-Pro-16-2023-M3-Max-Review-M3-Max-challenges-HX-CPUs-from-AMD-Intel.766414.0.html",
+          "note": "Review reports 5.2 W minimum idle, 7.91 W at 150 cd/m², and 6.49 W with an external screen (screen energy excluded). Eight times 10 W allows for awake serving processes and residency. This is not a loaded-cluster measurement."
+        }
+      ]
+    }
+  ]
+}

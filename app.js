@@ -1,5 +1,5 @@
 import { hardware, models, profiles, memoryFit } from './data.js';
-import { calculate, maximumProfitPerMonth } from './calculator.js';
+import { calculate, maximumProfitPerMonth } from './calculator.js?v=utilization';
 import { cheapestOutputOffer } from './openrouter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -27,6 +27,14 @@ function render() {
   const valid = input.value.trim() !== '' && input.validity.valid;
   input.setAttribute('aria-invalid', String(!valid));
   $('validation').hidden = valid;
+  const idleWatts = machine.idleWatts;
+  const utilizationPercent = $('utilization').valueAsNumber;
+  $('utilization-value').value = `${utilizationPercent}%`;
+  $('profit-period').textContent = `USD · 30 days · ${utilizationPercent}% utilized`;
+  $('idle-power-note').textContent = machine.idleGpuWatts !== undefined
+    ? `Estimated idle: ${idleWatts} W total (${machine.idleGpuWatts} W measured GPUs + ${machine.activeOverheadWatts} W estimated host).`
+    : `Estimated idle: ${idleWatts} W for the whole setup.`;
+  $('idle-power-note').title = machine.idleNote;
   $('setup-description').textContent = `${machine.name} · ${machine.detail} · ${machine.setup ?? 'single-machine inference'}`;
   $('configuration-note').hidden = !machine.note;
   $('configuration-note').textContent = machine.note ?? '';
@@ -39,10 +47,12 @@ function render() {
     const watts = profile?.watts ?? machine.watts;
     const energy = measured ? calculate({ watts, tokensPerSecond: profile.tps, pricePerKwh: 0 }) : null;
     const cost = energy && valid ? energy.kwh * input.valueAsNumber : null;
-    const profit = cost !== null && quote.offer ? maximumProfitPerMonth({
+    const monthly = cost !== null && (quote.offer || utilizationPercent === 0) ? maximumProfitPerMonth({
       watts, tokensPerSecond: profile.tps,
-      pricePerKwh: input.valueAsNumber, outputPricePerMillion: quote.offer.outputPerMillion,
-    }).profitPerMonth : null;
+      pricePerKwh: input.valueAsNumber, outputPricePerMillion: quote.offer?.outputPerMillion ?? 0,
+      utilizationPercent, idleWatts, activeOverheadWatts: machine.activeOverheadWatts,
+    }) : null;
+    const profit = monthly?.profitPerMonth ?? null;
     const row = document.createElement('tr');
     row.id = `row-${model.id}`;
     row.dataset.state = !fit.fits ? 'unsupported' : profile ? 'ready' : 'unbenchmarked';
@@ -52,13 +62,14 @@ function render() {
     row.innerHTML = `
       <th scope="row"><span class="model-name">${model.name}</span><span class="model-status">${status}</span></th>
       <td class="speed-cell"><span class="value">${measured ? format(profile.tps) : '—'}</span><span class="cell-note">${measured ? profile.speedLabel ?? '' : fit.fits ? 'No benchmark' : ''}</span></td>
-      <td class="power-cell"><span class="value">${fit.fits && watts !== undefined ? format(watts) : '—'}</span><span class="cell-note">${fit.fits && watts !== undefined ? profile?.powerLabel ?? 'Unverified wall estimate' : ''}</span></td>
+      <td class="power-cell"><span class="value">${fit.fits && watts !== undefined ? format(watts) : '—'}</span><span class="cell-note">${fit.fits && watts !== undefined ? profile?.powerLabel ?? 'Unverified wall estimate' : ''}</span><span class="cell-note">${measured && machine.activeOverheadWatts ? `Monthly active ≈${format(watts + machine.activeOverheadWatts)} W` : ''}</span></td>
       <td><span class="value">${energy ? format(energy.kwh, 3) : '—'}</span><span class="cell-note">${energy ? profile.energyLabel ?? '' : ''}</span></td>
       <td class="cost-column"><span class="value cost-value">${cost !== null ? money(cost) : '—'}</span><span class="cell-note">${cost !== null && profile.gpuJoulesPerToken ? 'GPU decode only' : ''}</span></td>
       <td class="hosted-cell"><span class="value hosted-value"></span><a class="cell-note provider-link" href="https://openrouter.ai/${model.openRouterId}"></a></td>
-      <td class="profit-column"><span class="value profit-value">${profit !== null ? money(profit, 2) : '—'}</span><span class="cell-note">${profit !== null ? profile.profitLabel ?? '30 days · 24/7' : ''}</span></td>`;
+      <td class="profit-column"><span class="value profit-value">${profit !== null ? money(profit, 2) : '—'}</span><span class="cell-note">${monthly ? `Idle electricity: ${money(monthly.idleElectricityPerMonth, 2)}` : ''}</span><span class="cell-note">${monthly && machine.activeOverheadWatts ? 'Includes estimated host power' : ''}</span></td>`;
     row.querySelector('th').title = `${format(fit.requiredGB, 1)} GB estimated from ${fit.basis} plus 20% headroom; ${fit.availableGB} GB memory budget. Other quantizations and context lengths may change fit.`;
     row.querySelector('.power-cell').title = profile?.powerNote ?? machine.powerNote ?? 'No power benchmark for this pairing.';
+    if (monthly) row.querySelector('.profit-column').title = `30-day output revenue: ${money(monthly.revenuePerMonth, 2)}. Active electricity: ${money(monthly.activeElectricityPerMonth, 2)} (${format(monthly.activeHours, 1)} h at ${format(watts + machine.activeOverheadWatts)} W). Idle electricity: ${money(monthly.idleElectricityPerMonth, 2)} (${format(monthly.idleHours, 1)} h at ${format(idleWatts)} W). ${machine.idleNote}`;
     if (measured) {
       const link = document.createElement('a');
       link.className = 'cell-note benchmark-link';
@@ -110,5 +121,6 @@ $('hardware-options').addEventListener('change', (event) => {
   render();
 });
 $('electricity-price').addEventListener('input', render);
+$('utilization').addEventListener('input', render);
 $('refresh-prices').addEventListener('click', loadHostedPrices);
 loadHostedPrices();

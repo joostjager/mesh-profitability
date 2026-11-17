@@ -8,13 +8,22 @@ export function calculate({ watts, tokensPerSecond, pricePerKwh }) {
   return { hours, kwh, cost: kwh * pricePerKwh };
 }
 
-export function maximumProfitPerMonth({ watts, tokensPerSecond, pricePerKwh, outputPricePerMillion }) {
+export function maximumProfitPerMonth({ watts, tokensPerSecond, pricePerKwh, outputPricePerMillion, utilizationPercent = 100, idleWatts = 0, activeOverheadWatts = 0 }) {
   calculate({ watts, tokensPerSecond, pricePerKwh });
   if (!Number.isFinite(outputPricePerMillion) || outputPricePerMillion < 0) {
     throw new RangeError('Enter a non-negative output price.');
   }
+  if (!Number.isFinite(utilizationPercent) || utilizationPercent < 0 || utilizationPercent > 100
+    || !Number.isFinite(idleWatts) || idleWatts < 0
+    || !Number.isFinite(activeOverheadWatts) || activeOverheadWatts < 0) {
+    throw new RangeError('Enter utilization from 0 to 100 and non-negative power estimates.');
+  }
   const hoursPerMonth = 30 * 24;
-  const revenuePerMonth = tokensPerSecond * 3600 / 1_000_000 * outputPricePerMillion * hoursPerMonth;
-  const electricityPerMonth = watts / 1000 * pricePerKwh * hoursPerMonth;
-  return { revenuePerMonth, electricityPerMonth, profitPerMonth: revenuePerMonth - electricityPerMonth };
+  const activeHours = hoursPerMonth * utilizationPercent / 100;
+  const idleHours = hoursPerMonth - activeHours;
+  const revenuePerMonth = tokensPerSecond * 3600 / 1_000_000 * outputPricePerMillion * activeHours;
+  const activeElectricityPerMonth = (watts + activeOverheadWatts) / 1000 * pricePerKwh * activeHours;
+  const idleElectricityPerMonth = idleWatts / 1000 * pricePerKwh * idleHours;
+  const electricityPerMonth = activeElectricityPerMonth + idleElectricityPerMonth;
+  return { activeHours, idleHours, revenuePerMonth, activeElectricityPerMonth, idleElectricityPerMonth, electricityPerMonth, profitPerMonth: revenuePerMonth - electricityPerMonth };
 }
