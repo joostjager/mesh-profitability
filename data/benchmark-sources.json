@@ -268,6 +268,49 @@
       "model_revision": "621d456e93e926e4b52f85cff5f634358c1828f9",
       "retrieved": "2026-11-16",
       "notes": "391 prompt tokens, 511 teacher-forced decode steps, five repeats after warmup; speculation disabled. Network, scheduling and prefill excluded. GPU energy measured via macmon/IOReport. Full-model parity unavailable. Architecture metadata normalized; weights unchanged."
+    },
+    {
+      "id": "mesh-glm53-h200nvl2-mtp-single",
+      "source_name": "User-reported MeshLLM benchmark, November 17, 2026",
+      "source_url": "./data/glm53-h200nvl-benchmark.json",
+      "provenance": "Reported directly by the user in the calculator chat. Approximate paired output throughput and combined GPU power; no raw traces supplied and not independently reproduced.",
+      "reported_date": "2026-11-17",
+      "hardware": "2 × NVIDIA H200 NVL",
+      "gpu_count": 2,
+      "combined_vram_gb_approx": 280,
+      "model": "GLM-5.3-Flash",
+      "quant": "UD-Q4_K_XL",
+      "model_revision": null,
+      "runtime": "MeshLLM",
+      "runtime_revision": null,
+      "speculative_decoding": "MTP enabled",
+      "concurrency": 1,
+      "workload": "Repeated long inference requests, one request at a time",
+      "context_tokens": null,
+      "output_tokens_per_request": null,
+      "repeats": null,
+      "tps": 90,
+      "power_w": 400,
+      "power_scope": "Combined power across both GPUs, excludes the rest of the machine and cooling",
+      "power_sensor": null,
+      "values_are_approximate": true,
+      "gpu_joules_per_output_token": 4.444444444444445,
+      "reported_openrouter_comparison": {
+        "provider": "Relace",
+        "output_usd_per_million": 0.0784,
+        "input_usd_per_million": 0.0399,
+        "quantization": "FP4, as reported by the user; differs from the local GGUF",
+        "url": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-flash/endpoints",
+        "note": "Historical context only. Calculator comparisons continue to fetch live output prices."
+      },
+      "limits": [
+        "No batching benefit is assumed",
+        "Prompt processing energy is not separately reported",
+        "Context length, output length, repeat count, artifact/runtime revisions and raw measurements are unavailable",
+        "Electricity cost excludes CPU/RAM, power-supply losses, cooling, rental, hardware and operations",
+        "The calculator counts output revenue only; input revenue and charges remain excluded",
+        "199.71 GB of weights plus planning headroom is used for fit, not a measured peak VRAM value"
+      ]
     }
   ],
   "verified_source_pages": {

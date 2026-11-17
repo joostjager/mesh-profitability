@@ -1,6 +1,6 @@
 # Mesh inference electricity calculator
 
-A static calculator for electricity cost per million output tokens, styled to match [meshllm.cloud](https://meshllm.cloud/). Choose an RTX 4090 desktop, RTX 5090 desktop, 64 GB M4 Max Mac, 512 GB M3 Ultra Mac Studio, or eight 64 GB M3 Max MacBook Pros, then compare all five models in a desktop table. Hardware and electricity price are the only inputs; the electricity default is **$0.20/kWh**.
+A static calculator for electricity cost per million output tokens, styled to match [meshllm.cloud](https://meshllm.cloud/). Choose two H200 NVL GPUs, an RTX 4090 desktop, RTX 5090 desktop, 64 GB M4 Max Mac, 512 GB M3 Ultra Mac Studio, or eight 64 GB M3 Max MacBook Pros, then compare all five models in a desktop table. Hardware and electricity price are the only inputs; the electricity default is **$0.20/kWh**.
 
 The table fetches current provider prices for all models and shows each model's lowest active output-token rate per million tokens, provider, and theoretical maximum monthly profit after electricity. Rows are sorted by monthly profit descending, with unknown profits last; the order updates with hardware, electricity price, and provider quotes. Input charges are excluded, and hosted quantization can differ from the local variant. The former “Behind the number” section is omitted from the UI; calculation details and source records remain in this repository.
 
@@ -64,6 +64,14 @@ The added hardware is specifically **Mac Studio M3 Ultra, 80 GPU cores, 512 GB u
 | MiniMax M3 | MLX 4-bit, no speculation | 19.7 | 227.5 GB | [oMLX](https://omlx.ai/benchmarks/performance/b810iglf) |
 
 GLM's reported speed requires the GLM-5.3-Flash-DFlash2 draft model and the published DFlash settings. MiniMax has DFlash, MTP, and expert offload disabled. Gemma uses 8-bit weights on the Studio, so its speed is not directly comparable to the 4-bit M4 Max profile. Monthly values keep the generation-only, output-only scope and 200 W estimated wall-power assumption.
+
+## Dual H200 NVL benchmark
+
+The user reported a rented **2 × H200 NVL** configuration with roughly **280 GB combined VRAM**, running **GLM-5.3 Flash UD-Q4_K_XL** through MeshLLM with **MTP speculative decoding enabled**. Repeated long requests ran one at a time, yielding approximately **90 output tok/s** at **400 W combined GPU power**. These are paired user-reported measurements, not an independently reproduced result. The exact model/runtime revisions, context/output lengths, repeat count, sensor methodology and raw traces were not supplied. The [source record](./data/glm53-h200nvl-benchmark.json) preserves those limits.
+
+The calculator uses the reported values without rounding intermediate calculations: `400 / 90 = 4.4444 GPU J/output token`, `1.234568 kWh/million output tokens`, and **$0.246914/million at $0.20/kWh**. The 400 W covers both GPUs together. It excludes CPU/RAM, power-supply losses, cooling, rental, hardware and operations. No batching gain is assumed, and this profile's power is not assigned to other models without measurements.
+
+The user's accompanying OpenRouter snapshot lists Relace at **$0.0784/million output tokens** and **$0.0399/million input tokens**, using **FP4** rather than our GGUF variant. The calculator continues to fetch live output prices rather than freezing that quote. At that output rate, a 720-hour month gives $18.29 output revenue minus $57.60 GPU electricity, or **−$39.31/month before other costs**. Input revenue and prompt-processing costs remain outside the calculator's scope. Memory fit uses approximately 199.71 GB of weights plus 20% headroom against combined VRAM, not a measured peak allocation.
 
 ## Eight-laptop GLM slice benchmark
 

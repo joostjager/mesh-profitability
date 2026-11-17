@@ -1,4 +1,10 @@
 export const hardware = [
+  {
+    id: 'h200nvl2', name: '2 × H200 NVL', detail: '≈280 GB combined VRAM', kind: 'gpu',
+    gpuCount: 2, memoryGB: 280, reservedMemoryGB: 0,
+    setup: '2 GPUs · one request at a time',
+    note: 'Reported MeshLLM benchmark: GLM-5.3 Flash UD-Q4_K_XL, MTP enabled, repeated long requests, one at a time. Approximately 90 output tok/s and 400 W across both GPUs. Electricity and monthly profit include GPU power only; CPU/RAM, cooling, hardware rental and operations are excluded. Batching was not measured. Hosted quantization differs: the reported Relace offer uses FP4.',
+  },
   { id: 'rtx4090', name: 'RTX 4090', detail: '24 GB VRAM', kind: 'gpu', memoryGB: 24, reservedMemoryGB: 0, watts: 350, powerUrl: 'https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/', powerNote: '350 W is an unverified whole-machine assumption. Geerling reports a 509.1 W system peak for gpt-oss 20B on a different 4090 PC; NVIDIA lists 450 W GPU TGP. Neither is an average wall measurement for this Qwen profile.' },
   { id: 'rtx5090', name: 'RTX 5090', detail: '32 GB VRAM', kind: 'gpu', memoryGB: 32, reservedMemoryGB: 0, watts: 450, powerUrl: 'https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/', powerNote: '450 W is an unverified whole-machine assumption. Published Qwen3.8 vLLM measurements report roughly 380–440 W for the GPU alone, with a different workload. NVIDIA lists 575 W GPU TGP; neither validates this profile at the wall.' },
   { id: 'm4max', name: 'Mac M4 Max', detail: '64 GB · 40 GPU cores', kind: 'mac', memoryGB: 64, reservedMemoryGB: 16, watts: 100, powerUrl: 'https://support.apple.com/en-us/102027', powerNote: '100 W is an unverified whole-machine assumption. The oMLX reports do not publish watts. Apple’s 145 W stress-test figure is for a 32-GPU-core, 36 GB Studio, not this 40-core, 64 GB configuration.' },
@@ -21,13 +27,23 @@ export const models = [
 
 export function memoryFit(machine, model, profile) {
   const stageTensorGB = profile?.stageTensorGB;
-  const peakMemoryGB = profile?.peakMemoryGB ?? model.peakMemoryGB;
-  const requiredGB = (stageTensorGB ?? peakMemoryGB ?? model.weightsGB) * 1.2;
+  const peakMemoryGB = profile?.peakMemoryGB ?? (profile?.weightsGB !== undefined ? undefined : model.peakMemoryGB);
+  const requiredGB = (stageTensorGB ?? peakMemoryGB ?? profile?.weightsGB ?? model.weightsGB) * 1.2;
   const availableGB = (machine.memoryGB - machine.reservedMemoryGB) / (stageTensorGB !== undefined ? machine.nodeCount : 1);
   return { fits: requiredGB <= availableGB, requiredGB, availableGB, basis: stageTensorGB !== undefined ? 'largest stage tensor set per laptop' : peakMemoryGB !== undefined ? 'reported peak memory' : 'weight size' };
 }
 
 export const profiles = [
+  {
+    hardwareId: 'h200nvl2', modelId: 'glm53', tps: 90,
+    quant: 'UD-Q4_K_XL · MTP on', weightsGB: 199.71,
+    watts: 400, gpuJoulesPerToken: 400 / 90,
+    powerLabel: 'Reported GPU total', speedLabel: 'Approx. · single request',
+    energyLabel: '≈4.44 GPU J/token', profitLabel: 'GPU costs only · upper bound',
+    powerNote: 'Approximately 400 W combined across both H200 NVL GPUs during the reported run, not 400 W per GPU. Excludes CPU/RAM, power-supply losses and cooling. No raw power trace or sensor methodology was supplied.',
+    recordId: 'mesh-glm53-h200nvl2-mtp-single', sourceUrl: './data/glm53-h200nvl-benchmark.json',
+    note: 'User-reported November 17, 2026: rented 2 × H200 NVL, roughly 280 GB combined VRAM, MeshLLM, GLM-5.3 Flash UD-Q4_K_XL, MTP enabled. Repeated long inference requests, one at a time: approximately 90 output tok/s and 400 W combined GPU power. Exact context/output lengths, repeat count, runtime/model revisions and raw traces were not supplied. Weight-size planning estimate is not measured peak VRAM. Relace FP4 is a different quantization; no batching gain is assumed.',
+  },
   {
     hardwareId: 'm3max8', modelId: 'glm53', tps: 67.64876075195366,
     quant: '4-bit UD-Q4_K_XL · 8 stages', stageTensorGB: 29.02374892,
